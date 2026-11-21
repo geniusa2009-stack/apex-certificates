@@ -19,7 +19,7 @@ jobs:
         with: { node-version: 22 }
       - run: npm install
       - run: npx playwright install --with-deps chromium
-      - run: sh scripts/vendor-fonts.sh
+      - run: cd fonts && sha256sum -c SHA256SUMS
       - run: npm run migrate
       - run: npm test
       - name: Keep generated test PDF hashes as evidence
