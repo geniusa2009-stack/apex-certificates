@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/index.js",
     "migrate": "node scripts/migrate.js",
     "create-user": "node scripts/create-user.js",
     "gen-key": "node scripts/gen-key.js",
-    "test": "node --test test/",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
     "test:unit": "node --test test/shared.test.js test/rules.test.js test/audit.test.js test/signers.test.js test/admin-html-safety.test.js"
   },
   "dependencies": {
