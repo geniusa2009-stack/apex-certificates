@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/broadsheet-4efc7cf2-8b9e-43f1-8da5-f342ce68c875/styles.css">
+<script src="_ds/broadsheet-4efc7cf2-8b9e-43f1-8da5-f342ce68c875/_ds_bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+body{margin:0;background:#0A1530}
+a{color:#CFE0FF}a:hover{color:#F2F3F5}
+button:focus-visible,a:focus-visible{outline:2px solid #CFE0FF;outline-offset:2px}
+@media print{body{background:#fff}}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute;" aria-hidden="true"><defs>
+  <linearGradient id="ppChrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2F3F5"></stop><stop offset=".45" stop-color="#C4C6CA"></stop><stop offset=".6" stop-color="#7B7E84"></stop><stop offset="1" stop-color="#F2F3F5"></stop></linearGradient>
+</defs></svg>
+<div data-screen-label="Volunteer Passport" style="min-height:100vh;font-family:'Source Serif 4',Georgia,serif;color:#F2F3F5;background:radial-gradient(ellipse at 15% 0%,#1C366F 0%,#142A5C 32%,#0A1530 72%);">
+  <header style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:22px clamp(20px,4vw,56px);">
+    <svg viewBox="170 205 670 445" style="width:36px;height:24px;" aria-hidden="true"><polygon points="178,643 460,213 595,420 545,477 460,355 272,643" fill="#CFE0FF"></polygon><polygon points="300,643 465,428 540,518 735,283 830,283 568,610 465,470" fill="url(#ppChrome)"></polygon><polygon points="640,548 688,498 800,643 705,643" fill="url(#ppChrome)"></polygon></svg>
+    <div style="font-size:13px;letter-spacing:0.42em;color:#C4C6CA;">APEX</div>
+    <div style="width:1px;height:18px;background:#7B7E84;"></div>
+    <div style="font-size:14px;color:#C4C6CA;white-space:nowrap;">Volunteer Passport</div>
+    <div role="tablist" aria-label="View" style="margin-left:auto;flex:none;display:flex;gap:4px;padding:4px;border-radius:999px;border:1px solid rgba(196,198,202,.3);">
+      <button type="button" role="tab" aria-selected="{{ isPublic }}" onClick="{{ showPublic }}" style="height:34px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;background:{{ tabPubBg }};color:{{ tabPubFg }};">Public profile</button>
+      <button type="button" role="tab" aria-selected="{{ isOwner }}" onClick="{{ showOwner }}" style="height:34px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;background:{{ tabOwnBg }};color:{{ tabOwnFg }};">My passport</button>
+    </div>
+  </header>
+  <sc-if value="{{ isSample }}" hint-placeholder-val="{{ true }}">
+    <div style="margin:0 clamp(20px,4vw,56px);padding:8px 14px;border:1px solid rgba(196,198,202,.35);border-radius:8px;font-size:13px;color:#C4C6CA;">SAMPLE DATA — a synthetic volunteer. Privacy changes here are local only and are not saved.</div>
+  </sc-if>
+
+  <main style="max-width:1120px;margin:0 auto;padding:40px clamp(20px,4vw,56px) 72px;display:flex;flex-direction:column;gap:64px;">
+    <sc-if value="{{ isMessage }}" hint-placeholder-val="{{ false }}">
+      <section style="display:flex;flex-direction:column;gap:14px;padding:60px 0;">
+        <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">{{ msgKicker }}</div>
+        <h1 style="margin:0;font-size:clamp(30px,4vw,44px);font-weight:600;">{{ msgTitle }}</h1>
+        <p style="margin:0;max-width:56ch;font-size:16px;line-height:1.6;color:#C4C6CA;">{{ msgBody }}</p>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}">
+      <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:48px;">
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">Sharing &amp; privacy</div>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#C4C6CA;max-width:46ch;">Choose what appears on your public passport. Turning sharing off hides the page; your certificates and records stay in the APEX registry.</p>
+          <div style="display:flex;flex-direction:column;">
+            <sc-for list="{{ privacyRows }}" as="p" hint-placeholder-count="7">
+              <button type="button" role="switch" aria-checked="{{ p.on }}" onClick="{{ p.toggle }}" disabled="{{ p.disabled }}" style="display:flex;align-items:center;gap:16px;padding:12px 0;border:0;border-bottom:1px solid rgba(196,198,202,.14);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;opacity:{{ p.opacity }};">
+                <span style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;color:#F2F3F5;">{{ p.label }}</span><span style="font-size:13px;color:#9EA3AD;">{{ p.hint }}</span></span>
+                <span style="flex:none;width:40px;height:22px;border-radius:999px;position:relative;background:{{ p.track }};border:1px solid rgba(196,198,202,.4);transition:background .2s;"><span style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#F2F3F5;transform:translateX({{ p.knob }}px);transition:transform .2s;"></span></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">Share your passport</div>
+          <div style="display:flex;gap:20px;align-items:flex-start;">
+            <div style="width:112px;height:112px;padding:8px;background:#F2F3F5;border-radius:6px;box-sizing:border-box;flex:none;">
+              <svg viewBox="0 0 {{ qrN }} {{ qrN }}" shape-rendering="crispEdges" role="img" aria-label="QR code linking to your public passport" style="width:100%;height:100%;display:block;"><path d="{{ qrPath }}" fill="#0A1530"></path></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;min-width:0;">
+              <div style="font-size:13px;color:#9EA3AD;word-break:break-all;">{{ profileUrl }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" onClick="{{ copyProfile }}" style="height:36px;padding:0 16px;border-radius:999px;border:1px solid #CFE0FF;background:transparent;color:#F2F3F5;font:inherit;font-size:13px;cursor:pointer;" style-hover="background:rgba(207,224,255,.12)">Copy link</button>
+                <button type="button" onClick="{{ downloadSummary }}" style="height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(196,198,202,.4);background:transparent;color:#F2F3F5;font:inherit;font-size:13px;cursor:pointer;" style-hover="background:rgba(207,224,255,.12)">Download verified summary</button>
+              </div>
+              <div style="font-size:13px;color:#9EA3AD;">{{ shareNote }}</div>
+            </div>
+          </div>
+          <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;margin-top:20px;">Claims under review</div>
+          <sc-for list="{{ pendingRows }}" as="c" hint-placeholder-count="1">
+            <div style="display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid rgba(196,198,202,.14);">
+              <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span style="font-size:15px;">{{ c.project }}</span><span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:{{ c.tone }};">{{ c.statusLabel }}</span></div>
+              <div style="font-size:13px;color:#9EA3AD;">{{ c.role }} · {{ c.period }} · {{ c.hours }} hours claimed</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#9EA3AD;">Nothing under review.</div></sc-if>
+          <div style="font-size:13px;color:#9EA3AD;line-height:1.5;">Pending, rejected and withdrawn claims are visible only to you and APEX staff. They never count towards verified hours.</div>
+        </div>
+      </section>
+      <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#7B7E84;margin-bottom:-40px;">{{ previewLabel }}</div>
+    </sc-if>
+
+    <sc-if value="{{ hasProfile }}" hint-placeholder-val="{{ true }}">
+      <section style="display:flex;flex-direction:column;gap:22px;">
+        <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">Verified Volunteer Record</div>
+        <h1 style="margin:0;font-size:clamp(40px,6vw,72px);line-height:1.02;font-weight:600;letter-spacing:-0.01em;text-wrap:balance;">{{ pub.display_name }}</h1>
+        <p style="margin:0;font-size:18px;line-height:1.5;color:#C4C6CA;max-width:60ch;">{{ rolesLine }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:clamp(28px,5vw,64px);margin-top:12px;">
+          <sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="font-size:clamp(34px,4vw,48px);font-weight:600;line-height:1;background:linear-gradient(135deg,#F2F3F5,#C4C6CA 55%,#9EA3AD);-webkit-background-clip:text;background-clip:text;color:transparent;">{{ s.value }}</div>
+              <div style="font-size:12px;letter-spacing:0.22em;text-transform:uppercase;color:#9EA3AD;">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <sc-if value="{{ hasCerts }}" hint-placeholder-val="{{ true }}">
+        <section style="display:flex;flex-direction:column;gap:8px;">
+          <h2 style="margin:0 0 12px;font-size:28px;font-weight:600;">Certificates</h2>
+          <sc-for list="{{ certRows }}" as="c" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 32px;padding:20px 0;border-top:1px solid rgba(196,198,202,.18);opacity:{{ c.opacity }};">
+              <div style="display:flex;flex-direction:column;gap:4px;min-width:0;">
+                <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;"><span style="font-size:19px;color:#F2F3F5;">{{ c.role }}</span><span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:{{ c.tone }};">{{ c.stateLabel }}</span></div>
+                <div style="font-size:14px;color:#C4C6CA;">{{ c.department }} · {{ c.period }} · {{ c.hours }} hours</div>
+                <div style="font-size:12px;letter-spacing:.08em;color:#7B7E84;font-variant-numeric:tabular-nums;">{{ c.id }} · Issued {{ c.issued }}</div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start;">
+                <a href="{{ c.verifyHref }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1px solid #CFE0FF;color:#F2F3F5;text-decoration:none;font-size:13px;" style-hover="background:rgba(207,224,255,.12)">Verify</a>
+                <sc-if value="{{ c.current }}" hint-placeholder-val="{{ true }}">
+                  <a href="{{ c.pdfHref }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1px solid rgba(196,198,202,.4);color:#F2F3F5;text-decoration:none;font-size:13px;" style-hover="background:rgba(207,224,255,.12)">Official PDF</a>
+                  <a href="{{ c.linkedin }}" target="_blank" rel="noopener noreferrer" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1px solid rgba(196,198,202,.4);color:#F2F3F5;text-decoration:none;font-size:13px;" style-hover="background:rgba(207,224,255,.12)">Add to LinkedIn</a>
+                  <button type="button" onClick="{{ c.copyCv }}" style="height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(196,198,202,.4);background:transparent;color:#F2F3F5;font:inherit;font-size:13px;cursor:pointer;" style-hover="background:rgba(207,224,255,.12)">Copy CV line</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ hasBadges }}" hint-placeholder-val="{{ true }}">
+        <section style="display:flex;flex-direction:column;gap:20px;">
+          <h2 style="margin:0;font-size:28px;font-weight:600;">Recognitions</h2>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:36px 32px;">
+            <sc-for list="{{ badgeRows }}" as="b" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+                <svg viewBox="0 0 100 100" style="width:76px;height:76px;" role="img" aria-label="{{ b.name }} recognition emblem">
+                  <circle cx="50" cy="50" r="47" fill="none" stroke="url(#ppChrome)" stroke-width="1.6"></circle>
+                  <circle cx="50" cy="50" r="42" fill="#142A5C" stroke="url(#ppChrome)" stroke-width=".6"></circle>
+                  <circle cx="50" cy="50" r="38" fill="none" stroke="#C4C6CA" stroke-opacity=".35" stroke-width=".4" stroke-dasharray="1 1.6"></circle>
+                  <g transform="translate(27 31) scale(0.068)"><polygon points="8,438 290,8 425,215 375,272 290,150 102,438" fill="#CFE0FF"></polygon><polygon points="130,438 295,223 370,313 565,78 660,78 398,405 295,265" fill="url(#ppChrome)"></polygon><polygon points="470,343 518,293 630,438 535,438" fill="url(#ppChrome)"></polygon></g>
+                  <text x="50" y="74" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="7" letter-spacing="1.6" fill="#C4C6CA">{{ b.mono }}</text>
+                </svg>
+                <div style="display:flex;flex-direction:column;gap:3px;">
+                  <div style="font-size:17px;color:#F2F3F5;">{{ b.name }}</div>
+                  <div style="font-size:13px;color:#9EA3AD;">Issued {{ b.issued }}</div>
+                  <div style="font-size:12px;letter-spacing:.08em;color:#7B7E84;">{{ b.id }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ hasTimeline }}" hint-placeholder-val="{{ true }}">
+        <section style="display:flex;flex-direction:column;gap:8px;">
+          <h2 style="margin:0 0 16px;font-size:28px;font-weight:600;">Impact record</h2>
+          <div style="position:relative;display:flex;flex-direction:column;gap:32px;padding-left:28px;">
+            <div style="position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:linear-gradient(#C4C6CA,rgba(196,198,202,.1));"></div>
+            <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="3">
+              <article style="position:relative;display:flex;flex-direction:column;gap:6px;max-width:68ch;">
+                <span style="position:absolute;left:-28px;top:6px;width:11px;height:11px;border-radius:50%;background:#0A1530;border:1.5px solid #C4C6CA;box-sizing:border-box;"></span>
+                <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#CFE0FF;">{{ t.period }}</div>
+                <div style="font-size:19px;color:#F2F3F5;">{{ t.role }} · {{ t.project }}</div>
+                <p style="margin:0;font-size:15px;line-height:1.6;color:#C4C6CA;text-wrap:pretty;">{{ t.summary }}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:#9EA3AD;">
+                  <span>{{ t.hours }} verified hours</span>
+                  <sc-for list="{{ t.evidence }}" as="e" hint-placeholder-count="0"><a href="{{ e.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.label }}</a></sc-for>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <footer style="font-size:13px;line-height:1.6;color:#7B7E84;max-width:72ch;">Only contributions that passed independent APEX review appear on this passport. The authenticity of each certificate is established by its signed registry record on the verification page, not by this profile.</footer>
+    </sc-if>
+  </main>
+  <div role="status" aria-live="polite" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:#F2F3F5;color:#0A1530;font-size:14px;opacity:{{ toastOp }};transition:opacity .25s;pointer-events:none;">{{ toast }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;public&quot;,&quot;owner&quot;],&quot;default&quot;:&quot;public&quot;,&quot;tsType&quot;:&quot;'public' | 'owner'&quot;}}">
+class Component extends DCLogic {
+  state = { status: 'loading', bundle: null, live: null, privacy: null, view: null, toast: '', qr: { n: 25, d: '' } };
+  async componentDidMount() {
+    const meta = document.querySelector('meta[name="apex-api-base"]');
+    this.api = meta ? meta.content : null;
+    const qs = new URLSearchParams(location.search);
+    this.pid = (qs.get('v') || 'v-5amp1e0a7ra').toLowerCase();
+    try {
+      this.R = await import(new URL('./shared/passport-rules.js', location.href).href);
+      if (!this.R.PUBLIC_ID_RE.test(this.pid)) return this.setState({ status: 'notfound' });
+      if (this.api) await this.loadLive();
+      else {
+        const r = await fetch(`samples/api/volunteers/${this.pid}.sample-bundle.json`, { cache: 'no-store' });
+        if (r.status === 404) return this.setState({ status: 'notfound' });
+        if (!r.ok) throw new Error('unavailable');
+        const bundle = await r.json();
+        if (bundle.env !== 'sample') throw new Error('not sample');
+        this.setState({ status: 'ok', bundle, privacy: this.R.normalizePrivacy(bundle.privacy) });
+      }
+    } catch (e) { this.setState({ status: 'unavailable' }); }
+    this.makeQr();
+  }
+  async loadLive() {
+    const view = this.view();
+    if (view === 'owner') {
+      const r = await fetch(`${this.api}/me`, { credentials: 'same-origin' });
+      if (r.status === 401 || r.status === 403) return this.setState({ status: 'signin' });
+      if (!r.ok) throw new Error('unavailable');
+      const me = await r.json();
+      this.pid = me.public_id;
+      return this.setState({ status: 'ok', live: me, privacy: me.privacy });
+    }
+    const r = await fetch(`${this.api}/volunteers/${encodeURIComponent(this.pid)}`, { cache: 'no-store' });
+    if (r.status === 404) return this.setState({ status: 'notfound' });
+    if (!r.ok) throw new Error('unavailable');
+    this.setState({ status: 'ok', live: { pub: await r.json() } });
+  }
+  view() { return this.state.view || this.props.view || 'public'; }
+  setView(v) { this.setState({ view: v }, () => { if (this.api) { this.setState({ status: 'loading', live: null }); this.loadLive().catch(() => this.setState({ status: 'unavailable' })); } }); }
+  base() { return this.api ? location.origin : location.href.replace(/[^/]*$/, '').replace(/\/$/, ''); }
+  profileUrl() { return this.api ? `${location.origin}/volunteers/${this.pid}` : `${this.base()}/APEX%20Volunteer%20Passport.dc.html?v=${this.pid}`; }
+  makeQr() {
+    if (!window.qrcode) { setTimeout(() => this.makeQr(), 150); return; }
+    const q = window.qrcode(0, 'M'); q.addData(this.profileUrl()); q.make();
+    const n = q.getModuleCount(); let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c} ${r}h1v1h-1z`;
+    this.setState({ qr: { n, d } });
+  }
+  flash(t) { clearTimeout(this.tt); this.setState({ toast: t }); this.tt = setTimeout(() => this.setState({ toast: '' }), 2200); }
+  async copy(text, msg) { try { await navigator.clipboard.writeText(text); this.flash(msg); } catch (e) { this.flash('Copy failed — select and copy manually'); } }
+  async togglePrivacy(k) {
+    const next = { ...this.state.privacy, [k]: !this.state.privacy[k] };
+    if (!this.api) return this.setState({ privacy: next });
+    const r = await fetch(`${this.api}/me/privacy`, { method: 'PUT', credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-apex-csrf': '1' }, body: JSON.stringify({ [k]: next[k] }) });
+    if (!r.ok) return this.flash('Could not save — try again');
+    this.setState({ privacy: (await r.json()).privacy }); this.flash('Saved');
+    this.loadLive().catch(() => {});
+  }
+  computePub(forceVisible) {
+    const s = this.state;
+    if (s.bundle) return this.R.publicProfile({ ...s.bundle, privacy: { ...s.privacy, profile_public: forceVisible || s.privacy.profile_public } });
+    if (s.live && s.live.pub) return s.live.pub;
+    if (s.live && s.live.public_preview) {
+      // Server preview is computed with sharing on; apply section toggles locally for display only.
+      const p = s.privacy, pv = { ...s.live.public_preview };
+      if (!p.show_hours) delete pv.verified_hours; if (!p.show_certificates) delete pv.certificates;
+      if (!p.show_badges) delete pv.badges; if (!p.show_contributions) delete pv.contributions;
+      return pv;
+    }
+    return null;
+  }
+  downloadSummary() {
+    const p = this.computePub(true); if (!p) return;
+    const fm = this.R.fmtMonth, L = [];
+    L.push('APEX — Verified Volunteer Summary', '', `Volunteer: ${p.display_name}`, `Generated: ${new Date().toISOString().slice(0, 10)}`);
+    if (this.state.bundle) L.push('SAMPLE DATA — not a real record.');
+    if (p.verified_hours != null) L.push(`Verified volunteer hours: ${p.verified_hours}`);
+    L.push('', 'Certificates');
+    for (const c of p.certificates || []) L.push(`- ${c.id} (${c.state}): ${c.role}, ${c.department}, ${fm(c.period_start)}–${fm(c.period_end)}, ${c.hours} hours. Verify: ${this.base()}/c/${c.id}`);
+    L.push('', 'Verified contributions');
+    for (const c of p.contributions || []) L.push(`- ${fm(c.start)}–${fm(c.end)}: ${c.role}, ${c.project} — ${c.hours} hours. ${c.summary || ''}`);
+    L.push('', 'Recognitions');
+    for (const b of p.badges || []) L.push(`- ${b.badge} (${b.id}), issued ${b.issued_at}`);
+    L.push('', 'Includes only records that passed independent APEX review. Certificate authenticity is established on the APEX verification page.');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([L.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' }));
+    a.download = `APEX-verified-summary-${this.pid}.txt`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  renderVals() {
+    const s = this.state, view = this.view(), isOwner = view === 'owner', R = this.R;
+    const fm = R ? R.fmtMonth : (x => x);
+    const period = (a, b) => a === b ? fm(a) : `${fm(a)} – ${fm(b)}`;
+    const pub = s.status === 'ok' ? this.computePub(isOwner) : null;
+    const msgs = {
+      loading: ['Loading', 'Opening passport…', ''],
+      notfound: ['Not available', 'This passport is private or does not exist', 'The volunteer may have turned off public sharing. Individual certificates can still be checked on the verification page.'],
+      unavailable: ['Unavailable', 'The registry could not be reached', 'Nothing is shown rather than unverified information. Please try again later.'],
+      signin: ['Sign in required', 'Sign in to manage your passport', 'Your privacy settings and pending claims are only available to you after signing in.'],
+    };
+    let msg = msgs[s.status];
+    if (!msg && !pub) msg = msgs.notfound;
+    const verifyHref = id => this.api ? `/c/${id}` : `APEX%20Verify.dc.html?id=${id}`;
+    const certRows = (pub && pub.certificates || []).map(c => ({
+      ...c, period: period(c.period_start, c.period_end), issued: c.issued_at, current: c.state === 'published',
+      stateLabel: { published: 'Current', superseded: 'Superseded', revoked: 'Revoked' }[c.state] || c.state,
+      tone: c.state === 'published' ? '#CFE0FF' : '#9EA3AD', opacity: c.state === 'published' ? 1 : 0.62,
+      verifyHref: verifyHref(c.id), pdfHref: this.api ? `${this.api}/certificates/${c.id}.pdf` : `APEX%20Certificate.dc.html`,
+      linkedin: R ? R.linkedInAddUrl(c, this.base()) : '#',
+      copyCv: () => this.copy(R.cvLine(c, this.base()), 'CV line copied'),
+    }));
+    const badgeRows = (pub && pub.badges || []).map(b => ({ id: b.id, name: b.badge, issued: b.issued_at, mono: String(b.badge).toUpperCase().slice(0, 14) }));
+    const timeline = (pub && pub.contributions || []).map(c => ({ ...c, period: period(c.start, c.end), evidence: c.evidence || [] }));
+    const stats = [];
+    if (pub && pub.verified_hours != null) stats.push({ value: pub.verified_hours, label: 'Verified hours' });
+    if (pub && pub.certificates) stats.push({ value: pub.certificates.filter(c => c.state === 'published').length, label: 'Current certificates' });
+    if (pub && pub.badges) stats.push({ value: pub.badges.length, label: 'Recognitions' });
+    const P = s.privacy || {};
+    const meta = [
+      ['profile_public', 'Public passport', 'Anyone with the link can view the page'],
+      ['show_hours', 'Verified hours', 'Total of independently reviewed hours'],
+      ['show_certificates', 'Certificates', 'Current, superseded and revoked certificates'],
+      ['show_badges', 'Recognitions', 'Active badges only'],
+      ['show_contributions', 'Impact record', 'Verified contributions timeline'],
+      ['show_evidence_links', 'Evidence links', 'Only links marked shareable by APEX staff'],
+      ['show_photo', 'Profile photo', 'Shown only after staff approval'],
+    ];
+    const privacyRows = meta.map(([k, label, hint], i) => {
+      const on = !!P[k], dis = i > 0 && !P.profile_public;
+      return { k, label, hint, on, disabled: dis, opacity: dis ? 0.45 : 1, track: on ? '#1C366F' : 'transparent', knob: on ? 18 : 0, toggle: () => this.togglePrivacy(k) };
+    });
+    let buckets = null;
+    if (isOwner && s.bundle && R) buckets = R.bucketContributions(s.bundle.contributions);
+    if (isOwner && s.live && s.live.buckets) buckets = s.live.buckets;
+    const pendingRows = buckets ? [...buckets.pending, ...buckets.closed].map(c => ({
+      project: c.project, role: c.role, hours: c.hours, period: period(c.start, c.end),
+      statusLabel: c.status === 'pending' ? 'Under review' : c.status === 'rejected' ? 'Not approved' : c.status === 'withdrawn' ? 'Withdrawn' : 'Not counted',
+      tone: c.status === 'pending' ? '#CFE0FF' : '#9EA3AD' })) : [];
+    const roles = pub ? (pub.roles || []).join(' · ') : '';
+    const projects = pub ? (pub.projects || []).join(', ') : '';
+    return {
+      isSample: !this.api, isOwner, isPublic: !isOwner,
+      tabPubBg: isOwner ? 'transparent' : '#F2F3F5', tabPubFg: isOwner ? '#C4C6CA' : '#0A1530',
+      tabOwnBg: isOwner ? '#F2F3F5' : 'transparent', tabOwnFg: isOwner ? '#0A1530' : '#C4C6CA',
+      showPublic: () => this.setView('public'), showOwner: () => this.setView('owner'),
+      isMessage: !!msg && !(isOwner && s.status === 'ok'), msgKicker: msg ? msg[0] : '', msgTitle: msg ? msg[1] : '', msgBody: msg ? msg[2] : '',
+      hasProfile: !!pub, pub: pub || {}, rolesLine: [roles, projects].filter(Boolean).join(' — '), stats,
+      hasCerts: certRows.length > 0, certRows, hasBadges: badgeRows.length > 0, badgeRows, hasTimeline: timeline.length > 0, timeline,
+      privacyRows, pendingRows, noPending: pendingRows.length === 0,
+      previewLabel: P.profile_public ? 'Public preview — what visitors see' : 'Preview — sharing is off, visitors see nothing',
+      profileUrl: this.profileUrl(), qrN: s.qr.n, qrPath: s.qr.d,
+      shareNote: P.profile_public ? 'Link and QR open your public passport.' : 'Sharing is off. The link shows “private” until you turn it on.',
+      copyProfile: () => this.copy(this.profileUrl(), 'Passport link copied'), downloadSummary: () => this.downloadSummary(),
+      toast: s.toast, toastOp: s.toast ? 1 : 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APEX Certificates — Admin</title>
+<style>
+  :root{--navy:#1C366F;--navy-ink:#0A1530;--silver:#7B7E84;--line:#C4C6CA;--bg:#F3F4F6;--surface:#fff;--danger:#B3261E;--ok:#1E7F45;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--navy-ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+  header b{letter-spacing:.04em}
+  header .who{font-size:12.5px;opacity:.85;display:flex;gap:10px;align-items:center}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:7px 12px;}
+  button.primary{background:var(--navy);color:#fff;border-color:var(--navy);}
+  button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  button.link{border:none;background:none;color:var(--navy);text-decoration:underline;padding:0}
+  main{max-width:1100px;margin:0 auto;padding:20px;display:none;}
+  #login-view{max-width:360px;margin:60px auto;background:var(--surface);padding:28px;border-radius:12px;border:1px solid var(--line);}
+  #login-view h1{font-size:18px;margin:0 0 16px}
+  label{display:block;font-size:12px;color:var(--silver);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em}
+  input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .card h2{font-size:15px;margin:0 0 12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:160px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--silver);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+  tr.clickable{cursor:pointer}
+  tr.clickable:hover{background:#F8F9FA}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+  .badge.draft{background:#E8E9EB;color:#3A3D42}
+  .badge.in_review{background:#FFF3CD;color:#7A5B00}
+  .badge.approved{background:#D9EAFE;color:#0B4A8F}
+  .badge.rejected{background:#FBE1DE;color:#8A2F26}
+  .badge.signed{background:#E0DDFB;color:#3F2E8F}
+  .badge.published{background:#D7F0DF;color:#1E7F45}
+  .badge.revoked{background:#F3D3D3;color:#8A2F26}
+  .badge.superseded{background:#EDEDED;color:#666}
+  #toast{position:fixed;bottom:18px;right:18px;background:var(--navy-ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;display:none;max-width:360px;z-index:50}
+  #toast.err{background:var(--danger)}
+  .err-msg{color:var(--danger);font-size:12.5px;margin-top:6px;min-height:1em}
+  .muted{color:var(--silver)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .hist{font-size:12px;color:var(--silver);max-height:220px;overflow:auto}
+  .hist div{padding:4px 0;border-bottom:1px dashed var(--line)}
+  dialog{border:none;border-radius:12px;padding:0;max-width:560px;width:90%}
+  dialog::backdrop{background:rgba(10,21,48,.45)}
+  dialog .card{margin:0;border:none;border-radius:0}
+  iframe#pdf-frame{width:100%;height:480px;border:1px solid var(--line);border-radius:8px}
+</style>
+</head>
+<body>
+
+<div id="login-view">
+  <h1>APEX Certificates — Admin sign-in</h1>
+  <label>Email</label><input id="li-email" type="email" autocomplete="username">
+  <label>Password</label><input id="li-pass" type="password" autocomplete="current-password">
+  <label>Authenticator code (if enrolled)</label><input id="li-totp" inputmode="numeric" maxlength="6" placeholder="6-digit code">
+  <div class="err-msg" id="li-err"></div>
+  <button class="primary" id="li-submit" style="width:100%;margin-top:10px">Sign in</button>
+</div>
+
+<header id="hdr" style="display:none">
+  <b>APEX Certificates</b>
+  <div class="who">
+    <span id="who-name"></span>
+    <button id="btn-logout">Sign out</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <div class="card" id="signers-card">
+    <h2>Certificate signers</h2>
+    <p class="muted" style="margin-top:0">Name and title printed on every certificate's two signature blocks. Changes apply to the next certificate signed — already-signed certificates keep what was printed at the time.</p>
+    <div class="row" id="signers-form"></div>
+    <div class="actions"><button class="primary" id="signers-save">Save signers</button></div>
+    <div class="err-msg" id="signers-err"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="align-items:flex-end">
+      <div>
+        <h2 style="margin-bottom:6px">Certificates</h2>
+      </div>
+      <div><label>State</label><select id="f-state"><option value="">All</option></select></div>
+      <div><label>Search (name / id / id)</label><input id="f-q" placeholder="Search…"></div>
+      <div style="flex:none"><button class="primary" id="btn-new">+ New certificate</button></div>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>Department / Role</th><th>Period</th><th>Hours</th><th>State</th><th>Updated</th></tr></thead>
+      <tbody id="cert-rows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Recent admin activity</h2>
+    <div class="hist" id="global-audit"></div>
+  </div>
+
+</main>
+
+<dialog id="dlg">
+  <div class="card">
+    <h2 id="dlg-title">Certificate</h2>
+    <div class="row">
+      <div><label>Volunteer name</label><input id="d-name"></div>
+      <div><label>Volunteer email (optional)</label><input id="d-email" type="email"></div>
+    </div>
+    <div class="row">
+      <div><label>Department / initiative</label><input id="d-dept"></div>
+      <div><label>Role</label><input id="d-role"></div>
+    </div>
+    <div class="row">
+      <div><label>Period start (YYYY-MM)</label><input id="d-pstart" placeholder="2026-01"></div>
+      <div><label>Period end (YYYY-MM)</label><input id="d-pend" placeholder="2026-06"></div>
+      <div><label>Hours</label><input id="d-hours" type="number" min="1" max="10000"></div>
+    </div>
+    <div class="err-msg" id="d-err"></div>
+    <div class="actions" id="dlg-actions"></div>
+    <div id="pdf-wrap" style="margin-top:12px;display:none"><label>Rendered PDF</label><iframe id="pdf-frame"></iframe></div>
+    <div style="margin-top:12px">
+      <label>Audit trail for this certificate</label>
+      <div class="hist" id="cert-audit"></div>
+    </div>
+    <div class="actions"><button id="dlg-close">Close</button></div>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+const API = '/api/v1/admin';
+const STATES = ['draft','in_review','approved','rejected','signed','published','revoked','superseded'];
+let session = null, certs = [], currentId = null;
+
+// Minimal HTML-escaping helper for any value interpolated into innerHTML that
+// can contain attacker-influenced text (e.g. actor_name, sourced from the
+// unconstrained users.display_name column) -- prevents stored XSS via the
+// audit-trail panels. Does not touch validation or audit data itself.
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function toast(msg, isErr){ const t=document.getElementById('toast'); t.textContent=msg; t.className=isErr?'err':''; t.style.display='block'; setTimeout(()=>t.style.display='none', 3500); }
+
+async function api(method, path, body){
+  const opts = { method, headers: {}, credentials: 'include' };
+  if (method !== 'GET') opts.headers['x-apex-csrf'] = '1';
+  if (body !== undefined) { opts.headers['content-type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const r = await fetch(API + path, opts);
+  const ct = r.headers.get('content-type') || '';
+  const data = ct.includes('application/json') ? await r.json().catch(()=>({})) : null;
+  if (!r.ok) throw new Error((data && data.error) || `Request failed (${r.status})`);
+  return data;
+}
+
+// ---------- auth ----------
+document.getElementById('li-submit').onclick = async () => {
+  const email = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-pass').value;
+  const totp = document.getElementById('li-totp').value.trim();
+  const err = document.getElementById('li-err'); err.textContent = '';
+  try {
+    const r = await fetch(API + '/login', { method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json', 'x-apex-csrf': '1' },
+      body: JSON.stringify({ email, password, totp: totp || undefined }) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Sign-in failed');
+    session = data.user;
+    boot();
+  } catch (e) { err.textContent = e.message; }
+};
+document.getElementById('btn-logout').onclick = async () => { await api('POST', '/logout'); location.reload(); };
+
+async function boot(){
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('hdr').style.display = 'flex';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('who-name').textContent = `${session.display_name} (${(session.roles||[]).join(', ') || 'no roles'})`;
+  document.getElementById('signers-card').style.display = session.roles?.includes('admin') ? 'block' : 'none';
+  const sel = document.getElementById('f-state');
+  for (const s of STATES) { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); }
+  await Promise.all([loadCerts(), loadSigners(), loadGlobalAudit()]);
+}
+
+(async () => {
+  try { const r = await fetch(API + '/session', { credentials: 'include' }); if (r.ok) { session = (await r.json()).user; await boot(); } }
+  catch (e) {}
+})();
+
+// ---------- signers ----------
+async function loadSigners(){
+  const { signers } = await api('GET', '/signers');
+  const wrap = document.getElementById('signers-form'); wrap.innerHTML = '';
+  for (const slot of ['signer1','signer2']) {
+    const s = signers[slot];
+    const div = document.createElement('div');
+    div.innerHTML = `<label>${slot} name</label><input data-slot="${slot}" data-f="name" value="${(s.name||'').replace(/"/g,'&quot;')}">
+      <label>${slot} title</label><input data-slot="${slot}" data-f="title" value="${(s.title||'').replace(/"/g,'&quot;')}">`;
+    wrap.appendChild(div);
+  }
+}
+document.getElementById('signers-save').onclick = async () => {
+  const err = document.getElementById('signers-err'); err.textContent = '';
+  try {
+    for (const slot of ['signer1','signer2']) {
+      const name = document.querySelector(`[data-slot="${slot}"][data-f="name"]`).value.trim();
+      const title = document.querySelector(`[data-slot="${slot}"][data-f="title"]`).value.trim();
+      await api('PUT', `/signers/${slot}`, { name, title });
+    }
+    toast('Signers saved'); await loadGlobalAudit();
+  } catch (e) { err.textContent = e.message; }
+};
+
+// ---------- certificate list ----------
+async function loadCerts(){
+  const { certificates } = await api('GET', '/certificates');
+  certs = certificates; renderRows();
+}
+function renderRows(){
+  const stateF = document.getElementById('f-state').value;
+  const q = document.getElementById('f-q').value.trim().toLowerCase();
+  const tbody = document.getElementById('cert-rows'); tbody.innerHTML = '';
+  for (const c of certs) {
+    if (stateF && c.state !== stateF) continue;
+    if (q && !(`${c.id} ${c.name}`.toLowerCase().includes(q))) continue;
+    const tr = document.createElement('tr'); tr.className = 'clickable';
+    tr.innerHTML = `<td>${c.id}</td><td>${c.name}</td><td>${c.department}<br><span class="muted">${c.role}</span></td>
+      <td>${c.period_start} – ${c.period_end}</td><td>${c.hours}</td>
+      <td><span class="badge ${c.state}">${c.state.replace('_',' ')}</span></td>
+      <td class="muted">${new Date(c.updated_at).toLocaleString()}</td>`;
+    tr.onclick = () => openCert(c.id);
+    tbody.appendChild(tr);
+  }
+}
+document.getElementById('f-state').onchange = renderRows;
+document.getElementById('f-q').oninput = renderRows;
+document.getElementById('btn-new').onclick = () => openCert(null);
+
+// ---------- certificate dialog ----------
+const dlg = document.getElementById('dlg');
+document.getElementById('dlg-close').onclick = () => dlg.close();
+
+async function openCert(id){
+  currentId = id;
+  document.getElementById('d-err').textContent = '';
+  document.getElementById('pdf-wrap').style.display = 'none';
+  document.getElementById('cert-audit').innerHTML = '';
+  let c = null;
+  if (id) { c = await api('GET', `/certificates/${id}`); }
+  document.getElementById('dlg-title').textContent = id ? `${c.id} — ${c.state}` : 'New certificate';
+  document.getElementById('d-name').value = c?.name || '';
+  document.getElementById('d-email').value = c?.volunteer_email || '';
+  document.getElementById('d-dept').value = c?.department || '';
+  document.getElementById('d-role').value = c?.role || '';
+  document.getElementById('d-pstart').value = c?.period_start || '';
+  document.getElementById('d-pend').value = c?.period_end || '';
+  document.getElementById('d-hours').value = c?.hours || '';
+
+  const readOnly = !!(c && !['draft','rejected'].includes(c.state));
+  for (const el of ['d-name','d-email','d-dept','d-role','d-pstart','d-pend','d-hours']) document.getElementById(el).disabled = readOnly;
+
+  renderActions(c);
+  if (c && c.state !== 'draft' && c.state !== 'in_review' && c.state !== 'approved' && c.state !== 'rejected') {
+    // signed/published/revoked/superseded -- a PDF may exist
+    const frame = document.getElementById('pdf-frame');
+    frame.src = `${API}/certificates/${c.id}/pdf`;
+    document.getElementById('pdf-wrap').style.display = 'block';
+  } else if (c && (c.state === 'signed')) {
+    document.getElementById('pdf-frame').src = `${API}/certificates/${c.id}/pdf`;
+    document.getElementById('pdf-wrap').style.display = 'block';
+  }
+  if (id) {
+    const { events } = await api('GET', `/audit?cert=${id}`);
+    document.getElementById('cert-audit').innerHTML = events.map(e =>
+      `<div><b>${e.action}</b> — ${esc(e.actor_name || e.actor || 'system')} — ${new Date(e.at).toLocaleString()}</div>`).join('') || '<div class="muted">No events yet</div>';
+  }
+  dlg.showModal();
+}
+
+function draftPayload(){
+  return {
+    name: document.getElementById('d-name').value.trim(),
+    volunteer_email: document.getElementById('d-email').value.trim() || null,
+    department: document.getElementById('d-dept').value.trim(),
+    role: document.getElementById('d-role').value.trim(),
+    period_start: document.getElementById('d-pstart').value.trim(),
+    period_end: document.getElementById('d-pend').value.trim(),
+    hours: Number(document.getElementById('d-hours').value)
+  };
+}
+
+function renderActions(c){
+  const wrap = document.getElementById('dlg-actions'); wrap.innerHTML = '';
+  const add = (label, fn, cls) => { const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.onclick = fn; wrap.appendChild(b); };
+
+  if (!c) { add('Create draft', async () => { try { const r = await api('POST', '/certificates', draftPayload()); toast('Draft created'); dlg.close(); await loadCerts(); openCert(r.id); } catch (e) { document.getElementById('d-err').textContent = e.message; } }, 'primary'); return; }
+
+  if (['draft','rejected'].includes(c.state)) {
+    add('Save changes', async () => { try { await api('PUT', `/certificates/${c.id}`, draftPayload()); toast('Saved'); await loadCerts(); } catch (e) { document.getElementById('d-err').textContent = e.message; } });
+    add('Submit for review', async () => { await guarded(() => api('POST', `/certificates/${c.id}/submit`)); }, 'primary');
+  }
+  if (c.state === 'in_review') {
+    add('Approve', async () => { await guarded(() => api('POST', `/certificates/${c.id}/approve`)); }, 'primary');
+    add('Reject', async () => { const note = prompt('Rejection reason (required):'); if (note) await guarded(() => api('POST', `/certificates/${c.id}/reject`, { note })); }, 'danger');
+  }
+  if (c.state === 'approved') add('Sign', async () => { await guarded(() => api('POST', `/certificates/${c.id}/sign`)); }, 'primary');
+  if (c.state === 'signed') add('Publish', async () => { await guarded(() => api('POST', `/certificates/${c.id}/publish`)); }, 'primary');
+  if (c.state === 'published') {
+    add('Revoke', async () => { const reason = prompt('Revocation reason (required):'); if (reason) await guarded(() => api('POST', `/certificates/${c.id}/revoke`, { reason })); }, 'danger');
+    add('Reissue (supersede)', async () => { await guarded(() => api('POST', `/certificates/${c.id}/reissue`)); });
+  }
+}
+async function guarded(fn){
+  try { await fn(); toast('Done'); dlg.close(); await loadCerts(); }
+  catch (e) { document.getElementById('d-err').textContent = e.message; toast(e.message, true); }
+}
+
+// ---------- global audit ----------
+async function loadGlobalAudit(){
+  const { events } = await api('GET', '/audit');
+  document.getElementById('global-audit').innerHTML = events.map(e =>
+    `<div><b>${e.action}</b>${e.cert_id ? ' · ' + e.cert_id : ''} — ${esc(e.actor_name || e.actor || 'system')} — ${new Date(e.at).toLocaleString()}</div>`).join('') || '<div class="muted">No activity yet</div>';
+}
+</script>
+</body>
+</html>

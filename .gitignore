@@ -1,0 +1,30 @@
+# Secrets & environment
+.env
+.env.*
+!.env.example
+server/.env
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+secrets/
+# Dependencies & build
+node_modules/
+server/node_modules/
+dist/
+coverage/
+# Data & generated output
+*.sql.gz
+*.dump
+pgdata/
+exports/
+*.pdf
+# Uploads / user data
+uploads/
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

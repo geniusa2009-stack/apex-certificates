@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/broadsheet-4efc7cf2-8b9e-43f1-8da5-f342ce68c875/styles.css">
+<script src="_ds/broadsheet-4efc7cf2-8b9e-43f1-8da5-f342ce68c875/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#0A1530}
+a{color:#CFE0FF}a:hover{color:#F2F3F5}
+@keyframes apxFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes apxSpin{to{transform:rotate(360deg)}}
+@keyframes apxScan{0%{transform:translateY(-26px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(26px);opacity:0}}
+@keyframes apxWave{0%,100%{transform:rotate(0)}20%{transform:rotate(-18deg)}45%{transform:rotate(14deg)}70%{transform:rotate(-10deg)}}
+@keyframes apxShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-7deg)}45%{transform:rotate(6deg)}70%{transform:rotate(-3deg)}}
+@keyframes apxRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</helmet>
+<div data-screen-label="Verification" style="min-height:100vh;font-family:'Source Serif 4',Georgia,serif;color:#F2F3F5;background:radial-gradient(ellipse at 20% 0%,#1C366F 0%,#142A5C 35%,#0A1530 75%);">
+  <header style="display:flex;align-items:center;gap:14px;padding:22px clamp(20px,4vw,56px);">
+    <svg viewBox="170 205 670 445" style="width:36px;height:24px;"><defs><linearGradient id="vMark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2F3F5"></stop><stop offset=".45" stop-color="#C4C6CA"></stop><stop offset=".6" stop-color="#7B7E84"></stop><stop offset="1" stop-color="#F2F3F5"></stop></linearGradient></defs><polygon points="178,643 460,213 595,420 545,477 460,355 272,643" fill="#CFE0FF"></polygon><polygon points="300,643 465,428 540,518 735,283 830,283 568,610 465,470" fill="url(#vMark)"></polygon><polygon points="640,548 688,498 800,643 705,643" fill="url(#vMark)"></polygon></svg>
+    <div style="font-size:13px;letter-spacing:0.42em;color:#C4C6CA;">APEX</div>
+    <div style="width:1px;height:18px;background:#7B7E84;"></div>
+    <div style="font-size:14px;color:#C4C6CA;">Certificate Verification</div>
+  </header>
+  <sc-if value="{{ isSample }}" hint-placeholder-val="{{ true }}">
+    <div style="margin:0 clamp(20px,4vw,56px);padding:8px 14px;border:1px solid rgba(196,198,202,.35);border-radius:8px;font-size:13px;color:#C4C6CA;">SAMPLE DATA — records signed with a throwaway test key. Not real certificates.</div>
+  </sc-if>
+
+  <main style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:clamp(24px,4vw,64px);padding:12px clamp(20px,4vw,56px) 40px;max-width:1240px;margin:0 auto;align-items:center;">
+    <section style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:460px;">
+      <div style="position:relative;width:min(300px,80vw);aspect-ratio:1;display:grid;place-items:center;">
+        <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(207,224,255,{{ haloA }}) 0%,transparent 62%);transition:background .8s;"></div>
+        <div style="position:absolute;inset:4%;border-radius:50%;border:1px solid rgba(207,224,255,.14);"></div>
+        <div style="position:absolute;inset:4%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 78%,rgba(207,224,255,.75) 96%,transparent 100%);-webkit-mask:radial-gradient(circle,transparent 69%,#000 70%,#000 71%,transparent 72%);mask:radial-gradient(circle,transparent 69%,#000 70%,#000 71%,transparent 72%);opacity:{{ scanOp }};transition:opacity .4s;animation:apxSpin 1.6s linear infinite;"></div>
+        <div style="width:62%;animation:apxFloat 4.5s ease-in-out infinite;">
+          <svg viewBox="0 0 160 160" style="width:100%;overflow:visible;display:block;filter:drop-shadow(0 18px 30px rgba(0,0,0,.45));">
+            <defs>
+              <radialGradient id="vHead" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#3a66c8"></stop><stop offset=".45" stop-color="#1c366f"></stop><stop offset="1" stop-color="#0a1530"></stop></radialGradient>
+              <linearGradient id="vRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6eeff" stop-opacity=".95"></stop><stop offset=".6" stop-color="#e6eeff" stop-opacity="0"></stop></linearGradient>
+              <linearGradient id="vChrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f6fa"></stop><stop offset=".45" stop-color="#c4c6ca"></stop><stop offset=".55" stop-color="#7b7e84"></stop><stop offset="1" stop-color="#e6e9ef"></stop></linearGradient>
+              <linearGradient id="vVisor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e3a7a"></stop><stop offset="1" stop-color="#0f2350"></stop></linearGradient>
+              <filter id="vGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+              <clipPath id="vVisorClip"><ellipse cx="80" cy="100" rx="42" ry="31"></ellipse></clipPath>
+            </defs>
+            <g style="transform-box:view-box;transform-origin:80px 150px;animation:{{ shakeAnim }};">
+              <g>
+                <rect x="78" y="26" width="4" height="14" rx="2" fill="url(#vChrome)"></rect>
+                <polygon points="80,2 102,30 93,30 80,13 67,30 58,30" fill="#1c366f" stroke="#3a5fb0" stroke-width=".8"></polygon>
+                <polygon points="80,18 90,31 85,31 80,24 75,31 70,31" fill="url(#vChrome)"></polygon>
+                <polygon points="80,2 102,30 93,30 80,13 67,30 58,30" fill="#eef4ff" filter="url(#vGlow)" style="opacity:{{ antOp }};transition:opacity .3s;"></polygon>
+              </g>
+              <rect x="8" y="80" width="20" height="38" rx="8" fill="url(#vChrome)"></rect>
+              <rect x="132" y="80" width="20" height="38" rx="8" fill="url(#vChrome)"></rect>
+              <circle cx="80" cy="96" r="56" fill="url(#vHead)"></circle>
+              <circle cx="80" cy="96" r="55" fill="none" stroke="url(#vRim)" stroke-width="2.5"></circle>
+              <ellipse cx="66" cy="58" rx="22" ry="8" fill="#fff" opacity=".12" transform="rotate(-18 66 58)"></ellipse>
+              <g style="opacity:{{ capOp }};transform:translateY({{ capY }}px);transition:opacity .5s, transform .7s cubic-bezier(.3,1.6,.5,1);">
+                <g transform="rotate(-14 56 52)">
+                  <path d="M42 54 v8 q14 7 28 0 v-8" fill="#0f2350" stroke="#9fb3dc" stroke-opacity=".5" stroke-width=".8"></path>
+                  <polygon points="28,52 56,41 84,52 56,63" fill="#142a5c" stroke="url(#vChrome)" stroke-width="1.2"></polygon>
+                  <circle cx="56" cy="52" r="2" fill="url(#vChrome)"></circle>
+                  <path d="M56 52 L33 58 L33 68" fill="none" stroke="url(#vChrome)" stroke-width="1.4"></path>
+                  <rect x="31" y="67" width="4" height="7" rx="1.5" fill="url(#vChrome)"></rect>
+                </g>
+              </g>
+              <ellipse cx="80" cy="100" rx="42" ry="31" fill="url(#vVisor)" stroke="#9fb3dc" stroke-opacity=".55" stroke-width="1.2"></ellipse>
+              <path d="M48 92 Q56 76 80 72" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="3" stroke-linecap="round"></path>
+              <g clip-path="url(#vVisorClip)" style="opacity:{{ scanOp }};transition:opacity .3s;">
+                <rect x="36" y="99" width="88" height="2" fill="#CFE0FF" filter="url(#vGlow)" style="animation:apxScan 1.1s ease-in-out infinite;"></rect>
+              </g>
+              <g style="opacity:{{ dimOp }};transition:opacity .4s;">
+                <g filter="url(#vGlow)" style="opacity:{{ openOp }};transition:opacity .2s;">
+                  <ellipse cx="64" cy="97" rx="9.5" ry="10.5" fill="#f2f6ff"></ellipse>
+                  <ellipse cx="96" cy="97" rx="9.5" ry="10.5" fill="#f2f6ff"></ellipse>
+                  <g style="transform:translate({{ eyeX }}px,0);transition:transform .5s ease-in-out;">
+                    <circle cx="64" cy="97" r="4.6" fill="#1c366f"></circle><circle cx="65.8" cy="95" r="1.5" fill="#fff"></circle>
+                    <circle cx="96" cy="97" r="4.6" fill="#1c366f"></circle><circle cx="97.8" cy="95" r="1.5" fill="#fff"></circle>
+                  </g>
+                </g>
+                <g filter="url(#vGlow)" fill="none" stroke="#f2f6ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="opacity:{{ happyOp }};transition:opacity .2s;">
+                  <path d="M55 101 L64 90 L73 101"></path><path d="M87 101 L96 90 L105 101"></path>
+                </g>
+                <path d="{{ mouth }}" fill="none" stroke="#f2f6ff" stroke-width="3" stroke-linecap="round" filter="url(#vGlow)"></path>
+              </g>
+              <g style="opacity:{{ waveOp }};transition:opacity .35s;transform-box:view-box;transform-origin:160px 118px;animation:{{ waveAnim }};">
+                <ellipse cx="160" cy="104" rx="11" ry="13" fill="url(#vChrome)"></ellipse>
+                <path d="M154 99 v10 M160 97 v13 M166 99 v10" stroke="#7b7e84" stroke-width="1" opacity=".6"></path>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div role="status" aria-live="polite" style="margin-top:8px;max-width:300px;padding:10px 16px;border-radius:14px;background:rgba(10,21,48,.6);border:1px solid rgba(207,224,255,.18);font-size:14px;line-height:1.45;color:#F2F3F5;text-align:center;font-style:italic;">{{ bubble }}</div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:22px;min-width:0;">
+      <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">{{ kicker }}</div>
+      <h1 style="margin:0;font-size:clamp(34px,4.4vw,52px);line-height:1.08;font-weight:600;color:#F2F3F5;text-wrap:balance;">{{ title }}</h1>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#C4C6CA;max-width:52ch;">{{ lead }}</p>
+
+      <sc-if value="{{ isVerified }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:20px 0;border-top:1px solid rgba(196,198,202,.25);border-bottom:1px solid rgba(196,198,202,.25);animation:apxRise .6s ease-out both;">
+          <div style="font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:#7B7E84;">Verified Volunteer Recognition Record</div>
+          <div style="font-size:clamp(28px,3.4vw,40px);font-weight:600;color:#F2F3F5;">{{ rec.recipient }}</div>
+          <div style="font-size:15px;color:#C4C6CA;">{{ rec.role }} · {{ rec.department }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasSuccessor }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ goSuccessor }}" style="align-self:flex-start;height:40px;padding:0 18px;border-radius:999px;border:1px solid #CFE0FF;background:transparent;color:#F2F3F5;font:inherit;font-size:14px;cursor:pointer;">Verify current certificate {{ successor }} →</button>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <sc-for list="{{ checks }}" as="c" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px;color:{{ c.color }};transition:color .3s;">
+            <span style="width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1px solid {{ c.ring }};background:{{ c.fill }};color:#0A1530;transition:all .3s;">{{ c.mark }}</span>
+            <span>{{ c.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <form onSubmit="{{ onSubmit }}" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">
+        <label style="flex:1 1 240px;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C4C6CA;">Certificate ID</span>
+          <input value="{{ idInput }}" onChange="{{ onId }}" spellcheck="false" style="height:48px;padding:0 14px;border-radius:12px;border:1px solid rgba(196,198,202,.35);background:rgba(10,21,48,.5);color:#F2F3F5;font:inherit;font-size:16px;letter-spacing:0.08em;outline-color:#CFE0FF;">
+        </label>
+        <button type="submit" style="align-self:flex-end;height:48px;padding:0 26px;border-radius:999px;border:1px solid rgba(255,255,255,.55);cursor:pointer;font:inherit;font-weight:600;font-size:15px;color:#0A1530;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0) 45%),linear-gradient(100deg,#E9ECF1,#FDFDFE 30%,#C4C6CA 62%,#F2F3F5);box-shadow:0 8px 22px rgba(0,0,0,.35);" style-hover="filter:brightness(1.05);" style-active="transform:translateY(1px);">Verify</button>
+      </form>
+      <sc-if value="{{ showDemos }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:#7B7E84;">
+        <span>Sample records:</span>
+        <sc-for list="{{ demos }}" as="d" hint-placeholder-count="3">
+          <button type="button" onClick="{{ d.go }}" style="height:32px;padding:0 12px;border-radius:999px;border:1px solid rgba(196,198,202,.3);background:transparent;color:#C4C6CA;font:inherit;font-size:13px;cursor:pointer;" style-hover="border-color:#CFE0FF;color:#F2F3F5;">{{ d.label }}</button>
+        </sc-for>
+      </div>
+      </sc-if>
+    </section>
+  </main>
+
+  <sc-if value="{{ isVerified }}" hint-placeholder-val="{{ false }}">
+    <section style="max-width:1240px;margin:0 auto;padding:20px clamp(20px,4vw,56px) 72px;display:flex;flex-direction:column;gap:28px;animation:apxRise .8s .2s ease-out both;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">Official original record</div>
+        <h2 style="margin:0;font-size:28px;font-weight:600;">Compare your copy against the issued certificate</h2>
+        <p style="margin:0;color:#C4C6CA;font-size:15px;max-width:70ch;">This is rendered from the signed registry record, not from the file you were sent. Every field on your copy must match exactly.</p>
+      </div>
+      <div style="overflow-x:auto;border-radius:6px;box-shadow:0 30px 70px rgba(0,0,0,.5);align-self:flex-start;max-width:100%;">
+        <div style="zoom:{{ certZoom }};">
+          <dc-import name="APEX Certificate" recipient="{{ rec.recipient }}" department="{{ rec.department }}" role="{{ rec.role }}" period="{{ rec.period }}" hours="{{ rec.hours }}" issue-date="{{ rec.issueDate }}" cert-id="{{ rec.certId }}" fingerprint="{{ rec.fingerprint }}" hint-size="1123px,794px"></dc-import>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:32px;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:#7B7E84;">Cryptographic proof</div>
+          <sc-for list="{{ proof }}" as="p" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <span style="font-size:13px;color:#7B7E84;">{{ p.k }}</span>
+              <span style="font-size:14px;color:#F2F3F5;word-break:break-all;font-variant-numeric:tabular-nums;">{{ p.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:#7B7E84;">Check a PDF you received</div>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#C4C6CA;">Choose the PDF you were given. Its SHA-256 fingerprint is computed on your device and compared with the fingerprint APEX signed at issuance. Nothing is uploaded. Any edit to the file — even re-saving it — changes the fingerprint.</p>
+          <sc-if value="{{ hasOfficialPdf }}" hint-placeholder-val="{{ false }}">
+            <a href="{{ pdfUrl }}" download="" style="font-size:14px;color:#CFE0FF;">Download the official PDF →</a>
+          </sc-if>
+          <label style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:12px;border:1px dashed rgba(196,198,202,.4);color:#C4C6CA;cursor:pointer;font-size:14px;" style-hover="border-color:#CFE0FF;color:#F2F3F5;">
+            <input type="file" accept="application/pdf" onChange="{{ onPdf }}" style="display:none;">
+            <span>{{ pdfLabel }}</span>
+          </label>
+          <sc-if value="{{ pdfDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#C4C6CA;word-break:break-all;">
+              <span style="font-size:15px;font-weight:600;color:{{ pdfColor }};">{{ pdfVerdict }}</span>
+              <span>Your file · {{ pdfHash }}</span>
+              <span>Official original · {{ pdfOfficial }}</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+  <footer style="padding:24px clamp(20px,4vw,56px) 36px;font-size:13px;color:#7B7E84;max-width:1240px;margin:0 auto;">Only this page, reached at verify.apex.org, is authoritative. A certificate's appearance — seal, QR, or mascot — is not proof of authenticity on its own.</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SAMPLE_BASE = 'samples/api';
+let corePromise = null;
+const loadCore = () => corePromise || (corePromise = import(new URL('shared/apex-verify.js', document.baseURI).href).catch(e => { corePromise = null; throw e; }));
+const fmtMonth = s => { if (!s) return ''; const [y, m] = s.split('-'); return new Date(Date.UTC(+y, +m - 1, 1)).toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); };
+const fmtDate = s => s ? new Date(s + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '';
+const grp = (h, n = 32) => ((h || '').slice(0, n).toUpperCase().match(/.{1,4}/g) || []).join(' ');
+const BAD = ['REVOKED', 'SUPERSEDED', 'INVALID_SIGNATURE', 'NOT_FOUND', 'UNAVAILABLE'];
+class Component extends DCLogic {
+  state = { phase: 'welcome', step: 0, idInput: 'APX-2026-VR-04817', result: null, pdf: null, base: null };
+  componentDidMount() {
+    const q = new URLSearchParams(location.search).get('id') || (location.pathname.match(/\/c\/([A-Za-z0-9-]+)/) || [])[1];
+    if (q) { this.setState({ idInput: q.toUpperCase() }); this.t(() => this.run(q), 1400); }
+    else this.t(() => this.run(), 1800);
+  }
+  componentWillUnmount() { (this.timers || []).forEach(clearTimeout); }
+  t(fn, ms) { const r = matchMedia('(prefers-reduced-motion: reduce)').matches; (this.timers = this.timers || []).push(setTimeout(fn, r ? Math.min(ms, 120) : ms)); }
+  apiBase() { const m = document.querySelector('meta[name="apex-api-base"]'); return this.props.apiBase || (m && m.content) || SAMPLE_BASE; }
+  isSample(base) { return (base || this.apiBase()).indexOf('samples/') !== -1; }
+  async run(idArg, baseOverride) {
+    (this.timers || []).forEach(clearTimeout); this.timers = [];
+    const id = String(idArg || this.state.idInput).trim().toUpperCase();
+    const base = baseOverride || this.apiBase();
+    const runId = (this.runId || 0) + 1; this.runId = runId;
+    this.setState({ phase: 'scanning', step: 0, result: null, pdf: null, idInput: id, base });
+    const started = Date.now();
+    let result;
+    try {
+      const core = await loadCore();
+      result = await core.fetchAndVerify(base, id, { expectEnv: this.isSample(base) ? 'sample' : 'production' });
+    } catch (e) { result = { state: 'UNAVAILABLE', reason: 'Verification code could not be loaded. Nothing was verified.' }; }
+    if (runId !== this.runId) return;
+    if (!result || ['VERIFIED'].concat(BAD).indexOf(result.state) === -1) result = { state: 'UNAVAILABLE', reason: 'Unexpected verifier output.' };
+    const done = { NOT_FOUND: 0, UNAVAILABLE: 0, INVALID_SIGNATURE: 1, REVOKED: 2, SUPERSEDED: 2, VERIFIED: result.pdf ? 4 : 3 }[result.state];
+    const seq = i => {
+      if (runId !== this.runId) return;
+      if (i < done) { this.setState({ step: i + 1 }); this.t(() => seq(i + 1), 600); }
+      else this.t(() => runId === this.runId && this.setState({ phase: result.state, result, step: done }), 350);
+    };
+    this.t(() => seq(0), Math.max(0, 900 - (Date.now() - started)));
+  }
+  async pdfCheck(e) {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const core = await loadCore();
+    const hash = await core.sha256Hex(new Uint8Array(await f.arrayBuffer()));
+    const official = this.state.result && this.state.result.pdf ? this.state.result.pdf.sha256 : null;
+    this.setState({ pdf: { name: f.name, hash, official, match: !!official && hash === official } });
+  }
+  renderVals() {
+    const { phase, step, result, pdf } = this.state;
+    const ok = phase === 'VERIFIED', bad = BAD.indexOf(phase) !== -1, scan = phase === 'scanning';
+    const p = (result && result.payload) || {};
+    const first = p.name ? p.name.split(' ')[0] : '';
+    const st = (result && result.status) || {};
+    const COPY = {
+      welcome: ['Certificate Verification', 'Welcome to the APEX registry', 'Every APEX certificate is digitally signed when issued and recorded here. Enter a certificate ID, or open the QR link printed on the certificate.', 'Welcome. I’ll check this certificate against the APEX registry.'],
+      scanning: ['Verifying', 'Checking the signed record…', 'Retrieving the registry record, validating APEX’s Ed25519 signature in your browser, and checking its current status.', 'One moment — reading the signed record.'],
+      VERIFIED: ['Certificate Verified', 'This certificate has been officially issued by APEX', 'The record below is the signed original. Every detail on the copy you were given must match it exactly — a QR code copied onto an altered document still opens this original.', 'Congratulations, ' + first + '. This one is genuine.'],
+      REVOKED: ['Revoked', 'This certificate has been revoked', (st.reason || 'APEX has revoked this certificate.') + ' It must not be accepted.', 'This record was revoked by APEX.'],
+      SUPERSEDED: ['Superseded', 'This certificate has been replaced', (st.reason || 'A newer certificate replaces this one.') + ' Only the current certificate should be accepted.', 'There’s a newer certificate for this volunteer.'],
+      INVALID_SIGNATURE: ['Invalid signature', 'The record failed cryptographic verification', 'The data does not match APEX’s digital signature (' + ((result && result.reason) || 'signature check failed') + '). Treat the certificate as forged or altered and contact volunteers@apex.org.', 'The signature doesn’t match. Something was changed.'],
+      NOT_FOUND: ['Not found', 'No matching APEX record', ((result && result.reason) || 'This ID is not in the APEX registry') + '. Check the ID, or treat the document as unverified.', 'I couldn’t find this certificate in the registry.'],
+      UNAVAILABLE: ['Verification unavailable', 'This certificate could not be checked right now', ((result && result.reason) || 'The registry could not be reached.') + ' This is not a verification result — please try again shortly.', 'I can’t reach the registry right now. Nothing was verified.']
+    }[phase];
+    const labels = ['Registry record retrieved', 'APEX Ed25519 signature valid', 'Not revoked or superseded', 'Official PDF fingerprint attested'];
+    const failText = {
+      NOT_FOUND: ['No record in registry'], UNAVAILABLE: ['Registry unreachable — not verified'],
+      INVALID_SIGNATURE: [null, 'Signature invalid — data altered or untrusted key'],
+      REVOKED: [null, null, 'Revoked by APEX'], SUPERSEDED: [null, null, 'Superseded by ' + (st.superseded_by || 'a newer certificate')]
+    };
+    const checks = labels.map((label, i) => {
+      const done = step > i, active = scan && step === i;
+      const x = bad && step === i && failText[phase] && failText[phase][i];
+      const na = ok && i === 3 && !(result && result.pdf);
+      return {
+        label: x ? failText[phase][i] : na ? 'No official PDF on record yet' : label,
+        mark: x ? '×' : done ? '✓' : na ? '–' : active ? '•' : '',
+        fill: x ? '#7B7E84' : done ? '#CFE0FF' : 'transparent',
+        ring: x || na ? '#7B7E84' : done || active ? '#CFE0FF' : 'rgba(196,198,202,.3)',
+        color: x || na ? '#C4C6CA' : done ? '#F2F3F5' : active ? '#CFE0FF' : '#7B7E84'
+      };
+    });
+    const go = (id, base) => () => this.run(id, base);
+    const rec = ok ? {
+      recipient: p.name, department: p.department, role: p.role, hours: String(p.hours), certId: p.id,
+      period: fmtMonth(p.period_start) + ' – ' + fmtMonth(p.period_end), issueDate: fmtDate(p.issued_at),
+      fingerprint: grp(result.recordHash, 16)
+    } : {};
+    const sample = this.isSample(this.state.base);
+    const pdfUrl = result && result.pdf ? (result.pdf.url || (this.state.base + '/certificates/' + p.id + '.pdf')) : '';
+    return {
+      kicker: COPY[0], title: COPY[1], lead: COPY[2], bubble: COPY[3],
+      isVerified: ok, rec, checks, idInput: this.state.idInput, isSample: sample, showDemos: this.isSample(this.apiBase()),
+      hasSuccessor: phase === 'SUPERSEDED' && !!st.superseded_by, successor: st.superseded_by || '', goSuccessor: go(st.superseded_by),
+      onId: e => this.setState({ idInput: e.target.value }),
+      onSubmit: e => { e.preventDefault(); this.run(); },
+      demos: [
+        { label: 'Valid', go: go('APX-2026-VR-04817', SAMPLE_BASE) }, { label: 'Superseded', go: go('APX-2025-VR-01102', SAMPLE_BASE) },
+        { label: 'Revoked', go: go('APX-2026-VR-03390', SAMPLE_BASE) }, { label: 'Tampered', go: go('APX-2026-VR-05521', SAMPLE_BASE) },
+        { label: 'Not found', go: go('APX-2026-VR-99999', SAMPLE_BASE) }, { label: 'Registry outage', go: go('APX-2026-VR-04817', 'https://registry-offline.invalid/api/v1') }
+      ],
+      capOp: ok ? 1 : 0, capY: ok ? 0 : -30, happyOp: ok ? 1 : 0, openOp: ok ? 0 : 1,
+      waveOp: ok || phase === 'welcome' ? 1 : 0, waveAnim: ok || phase === 'welcome' ? 'apxWave 1.4s ease-in-out 0.4s 2' : 'none',
+      shakeAnim: bad && phase !== 'UNAVAILABLE' ? 'apxShake .7s ease-in-out' : 'none',
+      scanOp: scan ? 1 : 0, antOp: scan ? 0.6 : ok ? 0.9 : 0, haloA: ok ? 0.32 : scan ? 0.18 : bad ? 0.04 : 0.12,
+      dimOp: bad ? 0.55 : 1, eyeX: scan ? (step % 2 ? 3 : -3) : 0,
+      mouth: bad ? 'M71 118 L89 118' : ok ? 'M69 113 Q80 124 91 113' : 'M71 115 Q80 122 89 115',
+      certZoom: Math.min(1, Math.max(0.3, ((typeof innerWidth === 'number' ? innerWidth : 1200) - 80) / 1123)),
+      proof: ok ? [
+        { k: 'Status', v: 'Valid · issued ' + fmtDate(p.issued_at) + (sample ? ' · SAMPLE environment' : '') },
+        { k: 'Signed certificate data', v: 'Ed25519 signature by APEX key “' + p.kid + '”, verified in your browser against the published key list' },
+        { k: 'Signed record hash (SHA-256 of canonical record)', v: grp(result.recordHash, 64) },
+        { k: 'Signature', v: (result.signature || '').slice(0, 44) + '…' },
+        { k: 'Official PDF fingerprint (SHA-256, signed attestation)', v: result.pdf ? grp(result.pdf.sha256, 64) : 'No official PDF has been attested for this record' },
+        { k: 'PDF digital signature (PAdES)', v: 'Not applied. The PDF file carries no embedded digital signature; its authenticity is established by matching its fingerprint to this signed record.' }
+      ] : [],
+      hasOfficialPdf: ok && !!(result && result.pdf), pdfUrl,
+      onPdf: e => this.pdfCheck(e),
+      pdfLabel: pdf ? pdf.name : 'Choose a PDF',
+      pdfDone: !!pdf, pdfHash: pdf ? grp(pdf.hash, 64) : '', pdfOfficial: pdf && pdf.official ? grp(pdf.official, 64) : 'none on record',
+      pdfVerdict: pdf ? (pdf.match ? 'Exact match — this is the official PDF' : pdf.official ? 'Does not match — this file differs from the official PDF' : 'Cannot compare — no official PDF fingerprint on record') : '',
+      pdfColor: pdf && pdf.match ? '#CFE0FF' : '#C4C6CA'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/broadsheet-4efc7cf2-8b9e-43f1-8da5-f342ce68c875/styles.css">
+<style>body{margin:0;background:#F2F3F5}a{color:#1C366F}a:hover{color:#0A1530}</style>
+</helmet>
+<div data-screen-label="Issuance & Security" style="font-family:'Source Serif 4',Georgia,serif;color:#0A1530;max-width:1180px;margin:0 auto;padding:48px clamp(20px,4vw,48px) 80px;display:flex;flex-direction:column;gap:56px;">
+  <header style="display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #C4C6CA;padding-bottom:24px;">
+    <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#7B7E84;">APEX · Volunteer Certificates</div>
+    <h1 style="margin:0;font-size:clamp(32px,4vw,46px);font-weight:600;line-height:1.1;">Issuance console &amp; security architecture</h1>
+    <p style="margin:0;max-width:70ch;font-size:16px;line-height:1.6;color:#142A5C;">How a certificate is created, signed and verified — and why a forged copy cannot pass the check at verify.apex.org.</p>
+    <div style="display:flex;gap:16px;font-size:14px;"><a href="APEX Certificate.dc.html">Certificate →</a><a href="APEX Verify.dc.html">Verification page →</a></div>
+  </header>
+
+  <section data-screen-label="Live console" style="display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;">
+      <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#1C366F;">00 · Issuance server</div>
+      <div style="font-size:13px;color:#7B7E84;">{{ connLabel }}</div>
+    </div>
+    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+      <form onSubmit="{{ doLogin }}" style="background:#FFFFFF;border:1px solid #C4C6CA;border-radius:8px;padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+        <label style="display:flex;flex-direction:column;gap:5px;flex:1 1 200px;"><span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">Email</span><input type="email" autocomplete="username" value="{{ lEmail }}" onChange="{{ setLEmail }}" style="height:42px;padding:0 12px;border:1px solid #C4C6CA;border-radius:8px;font:inherit;font-size:15px;"></label>
+        <label style="display:flex;flex-direction:column;gap:5px;flex:1 1 200px;"><span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">Password</span><input type="password" autocomplete="current-password" value="{{ lPw }}" onChange="{{ setLPw }}" style="height:42px;padding:0 12px;border:1px solid #C4C6CA;border-radius:8px;font:inherit;font-size:15px;"></label>
+        <label style="display:flex;flex-direction:column;gap:5px;flex:0 1 130px;"><span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">2FA code</span><input inputmode="numeric" autocomplete="one-time-code" value="{{ lTotp }}" onChange="{{ setLTotp }}" style="height:42px;padding:0 12px;border:1px solid #C4C6CA;border-radius:8px;font:inherit;font-size:15px;"></label>
+        <button type="submit" style="height:42px;padding:0 22px;border-radius:999px;border:none;background:#1C366F;color:#FFFFFF;font:inherit;font-weight:600;cursor:pointer;">Sign in</button>
+      </form>
+    </sc-if>
+    <sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;color:#142A5C;">
+          <span>Signed in as <strong>{{ me.display_name }}</strong> · {{ meRoles }}</span>
+          <button onClick="{{ createFromForm }}" style="height:36px;padding:0 16px;border-radius:999px;border:1px solid #1C366F;background:#FFFFFF;color:#1C366F;font:inherit;font-size:14px;cursor:pointer;">Create draft from form below</button>
+          <button onClick="{{ doLogout }}" style="height:36px;padding:0 16px;border-radius:999px;border:1px solid #C4C6CA;background:transparent;color:#7B7E84;font:inherit;font-size:14px;cursor:pointer;">Sign out</button>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #C4C6CA;border-radius:8px;overflow-x:auto;">
+          <sc-for list="{{ queue }}" as="c" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(140px,1.4fr) 100px minmax(200px,2fr);gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #E6E8EC;font-size:14px;">
+              <span style="font-weight:600;color:#1C366F;letter-spacing:0.04em;">{{ c.id }}</span>
+              <span>{{ c.name }} · {{ c.hours }} hrs</span>
+              <span style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#7B7E84;">{{ c.state }}</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <sc-for list="{{ c.actions }}" as="a" hint-placeholder-count="1">
+                  <button onClick="{{ a.run }}" style="height:32px;padding:0 12px;border-radius:999px;border:1px solid #1C366F;background:#FFFFFF;color:#1C366F;font:inherit;font-size:13px;cursor:pointer;" style-hover="background:#1C366F;color:#FFFFFF;">{{ a.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="font-size:14px;color:#142A5C;border-top:1px solid #C4C6CA;padding-top:10px;">{{ msg }}</div>
+    </sc-if>
+  </section>
+
+  <section data-screen-label="Admin console" style="display:flex;flex-direction:column;gap:20px;">
+    <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#1C366F;">01 · Workflow walkthrough (offline demo — nothing is issued)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px;align-items:start;">
+      <div style="background:#FFFFFF;border:1px solid #C4C6CA;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:18px;font-weight:600;">New certificate</div>
+          <div style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#7B7E84;">Draft · {{ certId }}</div>
+        </div>
+        <sc-for list="{{ fields }}" as="f" hint-placeholder-count="6">
+          <label style="display:flex;flex-direction:column;gap:5px;">
+            <span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">{{ f.label }}</span>
+            <input value="{{ f.value }}" onChange="{{ f.set }}" style="height:42px;padding:0 12px;border:1px solid #C4C6CA;border-radius:8px;font:inherit;font-size:15px;color:#0A1530;background:#FFFFFF;outline-color:#1C366F;">
+          </label>
+        </sc-for>
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px;border-top:1px solid #E6E8EC;">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:{{ s.color }};">
+              <span style="width:20px;height:20px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;border:1px solid {{ s.ring }};background:{{ s.fill }};color:#FFFFFF;">{{ s.mark }}</span>
+              <span>{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ advance }}" style="height:46px;border-radius:999px;border:none;background:#1C366F;color:#FFFFFF;font:inherit;font-weight:600;font-size:15px;cursor:pointer;" style-hover="background:#142A5C;">{{ cta }}</button>
+        <div style="font-size:12px;line-height:1.5;color:#7B7E84;">Issuer and approver must be different accounts, both with hardware-key 2FA. Fields lock after signing; corrections require revoke + reissue.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0;">
+        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">Live preview</div>
+        <div style="overflow:hidden;border-radius:6px;border:1px solid #C4C6CA;background:#FFFFFF;">
+          <div style="zoom:0.5;">
+            <dc-import name="APEX Certificate" recipient="{{ f.recipient }}" department="{{ f.department }}" role="{{ f.role }}" period="{{ f.period }}" hours="{{ f.hours }}" issue-date="{{ f.issueDate }}" cert-id="{{ certId }}" hint-size="1123px,794px"></dc-import>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #C4C6CA;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#7B7E84;">Audit log</div>
+          <sc-for list="{{ log }}" as="l" hint-placeholder-count="2">
+            <div style="display:flex;gap:12px;font-size:13px;color:#142A5C;"><span style="color:#7B7E84;font-variant-numeric:tabular-nums;flex:none;">{{ l.t }}</span><span>{{ l.m }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Architecture" style="display:flex;flex-direction:column;gap:20px;">
+    <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#1C366F;">02 · Security architecture</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:0;border:1px solid #C4C6CA;border-radius:8px;overflow:hidden;background:#FFFFFF;">
+      <sc-for list="{{ flow }}" as="n" hint-placeholder-count="5">
+        <div style="padding:20px;border-right:1px solid #E6E8EC;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:12px;color:#7B7E84;font-variant-numeric:tabular-nums;">{{ n.n }}</div>
+          <div style="font-size:16px;font-weight:600;">{{ n.t }}</div>
+          <div style="font-size:14px;line-height:1.55;color:#142A5C;">{{ n.d }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:28px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <h3 style="margin:0;font-size:20px;font-weight:600;">Threats and how they fail</h3>
+        <sc-for list="{{ threats }}" as="x" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:3px;padding-bottom:12px;border-bottom:1px solid #E6E8EC;">
+            <span style="font-size:15px;font-weight:600;">{{ x.t }}</span>
+            <span style="font-size:14px;line-height:1.55;color:#142A5C;">{{ x.d }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <h3 style="margin:0;font-size:20px;font-weight:600;">Signed record (canonical payload)</h3>
+        <pre style="margin:0;padding:18px;background:#0A1530;color:#CFE0FF;border-radius:8px;font-size:13px;line-height:1.6;overflow-x:auto;white-space:pre;">{{ payload }}</pre>
+        <div style="font-size:13px;line-height:1.55;color:#7B7E84;">The signing key lives in a cloud KMS/HSM and never leaves it. Public keys are published at verify.apex.org/.well-known/apex-keys.json with key IDs, so old certificates remain verifiable after rotation. Sample records on the verification page are signed with a throwaway Ed25519 test key (env “sample”), which production verification rejects.</div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const L = ['Draft created', 'Approved by second admin', 'Signed (Ed25519 · server key)', 'Published to registry'];
+const API = () => { const m = document.querySelector('meta[name="apex-api-base"]'); return (m && m.content) || '/api/v1'; };
+const LIVE_ACTIONS = {
+  draft: [['submit', 'Submit for review']], rejected: [['submit', 'Resubmit']],
+  in_review: [['approve', 'Approve'], ['reject', 'Reject']], approved: [['sign', 'Sign + generate PDF']],
+  signed: [['publish', 'Publish']], published: [['revoke', 'Revoke'], ['reissue', 'Reissue'], ['pdf', 'Official PDF']]
+};
+class Component extends DCLogic {
+  componentDidMount() { this.refreshSession(); }
+  async api(method, path, body) {
+    const r = await fetch(API() + path, { method, credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-apex-csrf': '1' }, body: body ? JSON.stringify(body) : undefined });
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw Object.assign(new Error('Issuance server not reachable'), { offline: true });
+    const j = await r.json();
+    if (!r.ok) throw Object.assign(new Error(j.error || 'HTTP ' + r.status), { status: r.status });
+    return j;
+  }
+  async refreshSession() {
+    try { const s = await this.api('GET', '/admin/session'); this.setState({ conn: 'live', me: s.user }); this.loadQueue(); }
+    catch (e) { this.setState({ conn: e.status === 401 ? 'login' : 'offline', me: null }); }
+  }
+  async loadQueue() { try { const j = await this.api('GET', '/admin/certificates'); this.setState({ queue: j.certificates }); } catch (e) { this.setState({ msg: e.message }); } }
+  async act(c, a) {
+    try {
+      if (a === 'pdf') { window.open(API() + '/certificates/' + c.id + '.pdf', '_blank', 'noopener'); return; }
+      let body;
+      if (a === 'reject') { const note = prompt('Reason for rejection'); if (!note) return; body = { note }; }
+      if (a === 'revoke') { const reason = prompt('Reason for revocation (shown publicly)'); if (!reason) return; body = { reason }; }
+      this.setState({ msg: 'Working…' });
+      const r = await this.api('POST', `/admin/certificates/${c.id}/${a}`, body);
+      this.setState({ msg: a === 'sign' ? `Signed. PDF SHA-256 ${r.pdf_sha256}` : a === 'reissue' ? `Draft ${r.id} created to supersede ${c.id}.` : `${c.id}: ${a} done.` });
+      this.loadQueue();
+    } catch (e) { this.setState({ msg: e.message }); }
+  }
+  liveVals() {
+    const s = this.state, conn = s.conn || 'checking';
+    const f = s.f;
+    return {
+      connLabel: { checking: 'Checking connection…', live: 'Connected — actions below are real and audited.', login: 'Server reachable — sign in to issue.', offline: 'Not connected to an issuance server. Sections below are an offline demo; nothing is issued.' }[conn],
+      showLogin: conn === 'login', isLive: conn === 'live', me: s.me || {}, meRoles: s.me ? (s.me.roles.join(', ') || 'no roles') : '',
+      lEmail: s.lEmail || '', lPw: s.lPw || '', lTotp: s.lTotp || '',
+      setLEmail: e => this.setState({ lEmail: e.target.value }), setLPw: e => this.setState({ lPw: e.target.value }), setLTotp: e => this.setState({ lTotp: e.target.value }),
+      doLogin: async e => { e.preventDefault(); try { await this.api('POST', '/admin/login', { email: s.lEmail, password: s.lPw, totp: s.lTotp }); this.setState({ lPw: '', lTotp: '', msg: '' }); this.refreshSession(); } catch (err) { this.setState({ msg: err.message }); } },
+      doLogout: async () => { try { await this.api('POST', '/admin/logout'); } catch (e) {} this.setState({ conn: 'login', me: null, queue: [] }); },
+      createFromForm: async () => {
+        try {
+          const m = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+          const ps = (f.period || '').split(/\s*[–-]\s*/).map(x => { const [mo, y] = x.trim().split(/\s+/); return y && m[mo] ? `${y}-${m[mo]}` : ''; });
+          const r = await this.api('POST', '/admin/certificates', { name: f.recipient, department: f.department, role: f.role, period_start: ps[0], period_end: ps[1], hours: parseInt(f.hours, 10) });
+          this.setState({ msg: `Draft ${r.id} created.` }); this.loadQueue();
+        } catch (e) { this.setState({ msg: e.message }); }
+      },
+      queue: (s.queue || []).map(c => ({ id: c.id, name: c.name, hours: c.hours, state: c.state.replace('_', ' '), actions: (LIVE_ACTIONS[c.state] || []).map(([a, label]) => ({ label, run: () => this.act(c, a) })) })),
+      hasMsg: !!s.msg, msg: s.msg || ''
+    };
+  }
+  state = { stage: 0, f: { recipient: 'Amira Khalid Al-Rashid', department: 'Youth Mentorship Initiative', role: 'Lead Program Mentor', period: 'Feb 2026 – Oct 2026', hours: '186', issueDate: '10 Nov 2026' }, log: [{ t: '09:12', m: 'Draft created by Lina M. Haddad' }] };
+  renderVals() {
+    const { stage, f } = this.state, locked = stage >= 2;
+    const labels = { recipient: 'Volunteer name', department: 'Department / initiative', role: 'Role', period: 'Service period', hours: 'Verified hours', issueDate: 'Issue date' };
+    const certId = 'APX-2026-VR-04817';
+    const msgs = ['Approved by Dr. Omar N. Saleh', 'Signed with Ed25519 key apex-2026-01', 'Published · QR live · PDF fingerprint recorded'];
+    return {
+      ...this.liveVals(),
+      f, certId, log: this.state.log,
+      fields: Object.keys(labels).map(k => ({ label: labels[k], value: f[k], set: e => !locked && this.setState({ f: { ...f, [k]: e.target.value } }) })),
+      steps: L.map((label, i) => ({ label, mark: i <= stage ? '✓' : '', fill: i <= stage ? '#1C366F' : 'transparent', ring: i <= stage ? '#1C366F' : '#C4C6CA', color: i <= stage ? '#0A1530' : '#7B7E84' })),
+      cta: ['Request approval', 'Sign certificate', 'Publish & email PDF', 'Start new draft'][stage],
+      advance: () => {
+        if (stage === 3) return this.setState({ stage: 0, log: [{ t: '09:40', m: 'New draft created' }] });
+        const t = ['09:20', '09:21', '09:22'][stage];
+        this.setState({ stage: stage + 1, log: [...this.state.log, { t, m: msgs[stage] }] });
+      },
+      flow: [
+        { n: '01', t: 'Draft', d: 'Coordinator enters the record from the volunteer database; hours pulled from logged shifts, not typed freehand.' },
+        { n: '02', t: 'Approve', d: 'A second admin approves. No single account can issue a certificate alone.' },
+        { n: '03', t: 'Sign', d: 'The canonical record is hashed and signed in the KMS. The ID, QR link and fingerprint are printed on the PDF.' },
+        { n: '04', t: 'Publish', d: 'Record, signature and PDF hash go to an append-only registry. Revocations are new entries, never edits.' },
+        { n: '05', t: 'Verify', d: 'Anyone scans the QR. The page fetches the record, checks the signature against the published key and the revocation list.' }
+      ],
+      threats: [
+        { t: 'Edited PDF (name, hours changed)', d: 'The registry shows the original fields; the PDF fingerprint no longer matches.' },
+        { t: 'Fully fake certificate', d: 'Its ID is absent from the registry, or the record’s signature fails against APEX’s public key.' },
+        { t: 'QR pointing to a look-alike site', d: 'The certificate prints the domain in text; only verify.apex.org is authoritative and uses HSTS.' },
+        { t: 'Compromised admin account', d: 'Two-person approval, hardware-key 2FA and an append-only audit log limit and expose misuse.' },
+        { t: 'ID enumeration / scraping', d: 'IDs carry a random suffix, lookups are rate-limited, and public pages show only certificate fields.' }
+      ],
+      payload: JSON.stringify({ v: 1, id: certId, name: f.recipient, dept: f.department, role: f.role, period: f.period, hours: Number(f.hours) || f.hours, issued: f.issueDate, kid: 'apex-2026-01', alg: 'Ed25519' }, null, 2)
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_DB: apex_test, POSTGRES_USER: apex, POSTGRES_PASSWORD: apex_ci_only }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://apex:apex_ci_only@localhost:5432/apex_test
+      RUN_PDF: "1"
+    defaults: { run: { working-directory: server } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: sh scripts/vendor-fonts.sh
+      - run: npm run migrate
+      - run: npm test
+      - name: Keep generated test PDF hashes as evidence
+        if: always()
+        run: psql "$DATABASE_URL" -c "select id, state, pdf_sha256, length(pdf) from certificates order by created_at" || true
