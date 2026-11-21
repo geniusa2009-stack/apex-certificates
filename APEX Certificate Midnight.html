@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>APEX — Certificate Template 02 / Midnight Silver</title>
+<style>
+@font-face{font-family:"Source Serif 4";src:url("/_fonts/SourceSerif4-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Source Serif 4";src:url("/_fonts/SourceSerif4-Semibold.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Source Serif 4";src:url("/_fonts/SourceSerif4-It.woff2") format("woff2");font-style:italic;font-weight:400;font-display:swap}
+*{box-sizing:border-box}
+html,body{padding:0;margin:0}
+body{background:#111c32;min-height:100vh;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+.preview-nav{max-width:1123px;margin:25px auto 0;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:12px;color:#dde9fa;letter-spacing:.06em}
+.preview-nav strong{font-size:14px;letter-spacing:.19em}
+.preview-nav a{color:#b9d7ed;text-decoration:underline;text-underline-offset:3px}
+.stage-shell{position:relative;width:1123px;height:794px;margin:22px auto 35px;transform-origin:top left}
+[data-screen-label="Certificate"]{width:1123px;height:794px;position:relative;overflow:hidden;background:#f9fafb;color:#13213a;font-family:"Source Serif 4",Georgia,serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:0 14px 48px #040d1e77}
+.cert-frame{position:absolute;inset:17px;border:1px solid #a7afc0;pointer-events:none;z-index:10}
+.cert-frame:after{content:"";position:absolute;inset:5px;border:1px solid #e3e7ed}
+.hero{height:221px;background:linear-gradient(115deg,#07152d 0%,#132b4d 58%,#223c5c 100%);position:relative;overflow:hidden;color:#fff}
+.hero:after{content:"";position:absolute;bottom:0;left:61px;right:61px;height:1px;background:linear-gradient(90deg,transparent,#97cfe9 35%,#ccd7e4 65%,transparent)}
+.hero-grid{position:absolute;right:-22px;top:-50px;opacity:.12;width:450px;height:320px;background:repeating-linear-gradient(134deg,transparent 0 21px,#a3d1f4 22px,#a3d1f4 23px,transparent 24px 48px);transform:skewX(-12deg)}
+.hero-orbit{position:absolute;right:65px;top:42px;width:290px;height:290px;border-radius:50%;border:1px solid #bcd7e43c;box-shadow:0 0 0 43px #c9e1ee08,0 0 0 86px #c9e1ee07}
+.hero-content{position:relative;z-index:1;margin:33px 66px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{height:34px;width:38px;flex:none}
+.brand-text{font-family:Arial,Helvetica,sans-serif;font-size:27px;letter-spacing:.22em;font-weight:700;line-height:1}
+.brand-sub{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:.25em;color:#b9cddf;margin-top:6px}
+.hero-meta{text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#adc5db;letter-spacing:.25em;line-height:1.9}
+.hero-meta strong{font-size:13px;display:block;color:#fff;letter-spacing:.12em;font-weight:500}
+.hero-title{position:absolute;left:65px;top:107px;z-index:1}
+.hero-title .eyebrow{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#9fd0e8;letter-spacing:.31em}
+.hero-title h1{margin:9px 0 0;font-family:"Source Serif 4",Georgia,serif;font-weight:400;font-size:37px;letter-spacing:.015em}
+.hero-title .rule{display:block;width:88px;height:3px;background:#89cbe8;margin-top:12px}
+.hero-right-label{position:absolute;right:68px;bottom:41px;color:#cbd7e4;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:.21em}
+.left-spine{position:absolute;left:27px;top:243px;width:3px;height:437px;background:linear-gradient(#8bcbe4,#dbe5eb 80%,transparent)}
+.recipient-block{position:absolute;top:251px;left:68px;right:68px;text-align:center}
+.recipient-block .eyebrow{font-family:Arial,Helvetica,sans-serif;color:#56748d;font-size:10px;letter-spacing:.27em}
+.recipient{font-size:52px;font-weight:600;line-height:1.1;letter-spacing:-.015em;max-width:900px;margin:8px auto 7px;min-height:60px;white-space:normal;overflow-wrap:break-word}
+.recipient-line{width:116px;height:2px;background:#8abdd4;margin:0 auto}
+.dedication{position:absolute;top:355px;left:164px;right:164px;text-align:center;font-size:14px;line-height:1.57;color:#344963}
+.dedication strong{color:#142b4c;font-weight:600}
+.details{position:absolute;top:447px;left:68px;right:68px;height:74px;display:grid;grid-template-columns:1.45fr 1.35fr 1.15fr .6fr;border-top:1px solid #a7b9c8;border-bottom:1px solid #a7b9c8;background:#f0f4f7}
+.detail{padding:14px 15px 10px;border-right:1px solid #ccd6df;min-width:0}
+.detail:last-child{border-right:0}
+.detail-label{display:block;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:.16em;color:#60738c;margin-bottom:10px}
+.detail-val{display:block;font-size:13px;font-weight:600;color:#122a48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.signatures{position:absolute;top:552px;left:94px;right:94px;height:107px;display:grid;grid-template-columns:1fr 118px 1fr;align-items:end;gap:43px}
+.signer{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.signer.right{align-items:flex-end;text-align:right}
+.signer-kicker{font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:.16em;color:#748398;margin-bottom:11px}
+.signer-rule{height:1px;background:#526e8c;width:100%;margin-bottom:7px}
+.signer-name{font-size:14px;font-weight:600;color:#1c3150;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.signer-title{font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#6b7d91;margin-top:5px}
+.seal{width:108px;height:108px;border-radius:50%;border:1.5px solid #93a6b9;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fff 20%,#e6edf3 90%);position:relative;margin-bottom:0}
+.seal:before{content:"";position:absolute;inset:6px;border:1px dashed #9fb3c6;border-radius:50%}
+.seal-center{text-align:center;position:relative;font-family:Arial,Helvetica,sans-serif}
+.seal-center strong{font-size:25px;line-height:1;color:#203e60;display:block;letter-spacing:.02em}
+.seal-center small{display:block;color:#6986a2;font-size:7px;letter-spacing:.18em;margin-top:9px}
+.footer{position:absolute;top:685px;left:69px;right:69px;height:66px;display:grid;grid-template-columns:74px minmax(0,1fr) minmax(0,1.12fr);gap:12px;align-items:center;border-top:1px solid #c6d1dc;padding-top:10px}
+.qrbox{width:58px;height:58px;border:1px solid #91a7b9;padding:4px;background:#fff}
+.qrbox svg{width:100%;height:100%;display:block}
+.qr-demo{display:none;width:100%;height:100%;text-align:center;align-items:center;justify-content:center;font:700 8px/1.3 Arial,sans-serif;color:#60748d}
+.preview .qr-demo{display:flex}
+.preview .qrbox svg{display:none}
+.footer-label{font-family:Arial,Helvetica,sans-serif;font-size:8px;letter-spacing:.16em;color:#6a7e92;margin-bottom:5px}
+.footer-main{font-size:13px;font-weight:600;letter-spacing:.03em;color:#193754;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer-sub{font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#526a82;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer-verification{text-align:right;min-width:0}
+.fingerprint{font:10px/1.3 Arial,Helvetica,sans-serif;letter-spacing:.03em;color:#314a69}
+.preview-watermark{position:absolute;z-index:2;left:450px;top:390px;transform:rotate(-26deg);border:3px solid #6e87a233;color:#44608320;padding:9px 19px;font:bold 34px Arial,Helvetica,sans-serif;letter-spacing:.25em;pointer-events:none}
+.preview:not(.preview) .preview-watermark{display:none}
+body:not(.preview) .preview-watermark{display:none}
+@media print{html,body{background:#fff;width:1123px;height:794px;overflow:hidden}.preview-nav{display:none}.stage-shell{margin:0!important;transform:none!important}[data-screen-label="Certificate"]{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="preview-nav" id="preview-nav">
+  <div><strong>APEX / CERTIFICATE STUDIOS</strong> &nbsp; · &nbsp; TEMPLATE 02 — MIDNIGHT SILVER</div>
+  <div>DESIGN PREVIEW ONLY &nbsp; · &nbsp; <a href="/APEX%20Certificate.dc.html">VIEW ORIGINAL</a></div>
+</div>
+<div class="stage-shell" id="stage-shell">
+  <main data-screen-label="Certificate" role="document" aria-label="APEX certificate of appreciation, template two">
+    <div class="cert-frame"></div>
+    <div class="hero">
+      <div class="hero-grid"></div><div class="hero-orbit"></div>
+      <div class="hero-content">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 60 60" aria-hidden="true"><path d="M4 51 29 7l12 18-7 9-5-9-15 26z" fill="#90cbe6"/><path d="M24 51 41 29l7 8-6 8-2-3-7 9z" fill="#d2dae3"/></svg>
+          <div><div class="brand-text">APEX</div><div class="brand-sub">OPPORTUNITIES • COMMUNITY • IMPACT</div></div>
+        </div>
+        <div class="hero-meta"><span>OFFICIAL RECOGNITION SERIES</span><strong>VOLUNTEER EXCELLENCE</strong><span>EDITION 02 / SILVER</span></div>
+      </div>
+      <div class="hero-title">
+        <div class="eyebrow">IN RECOGNITION OF IMPACT AND DEDICATION</div>
+        <h1>Certificate of Appreciation</h1>
+        <span class="rule"></span>
+      </div>
+      <div class="hero-right-label">APEX · RECOGNITION PROGRAM</div>
+    </div>
+    <div class="left-spine"></div>
+    <section class="recipient-block">
+      <div class="eyebrow">THIS CERTIFICATE IS PROUDLY PRESENTED TO</div>
+      <div class="recipient" data-field="recipient">Amira Khalid Al-Rashid</div>
+      <div class="recipient-line"></div>
+    </section>
+    <section class="dedication">
+      For exceptional dedication, initiative and meaningful contributions to
+      <strong>the APEX community</strong>. Your time, creativity and commitment have helped
+      turn shared opportunities into real impact.
+    </section>
+    <section class="details" aria-label="Certificate details">
+      <div class="detail"><span class="detail-label">DEPARTMENT / INITIATIVE</span><span class="detail-val" data-field="department">Youth Mentorship Initiative</span></div>
+      <div class="detail"><span class="detail-label">VOLUNTEER ROLE</span><span class="detail-val" data-field="role">Lead Program Mentor</span></div>
+      <div class="detail"><span class="detail-label">SERVICE PERIOD</span><span class="detail-val" data-field="period">Feb 2026 – Oct 2026</span></div>
+      <div class="detail"><span class="detail-label">HOURS</span><span class="detail-val" data-field="hours">186</span></div>
+    </section>
+    <section class="signatures" aria-label="Authorized signatories">
+      <div class="signer">
+        <span class="signer-kicker">AUTHORIZED SIGNATORY · <span data-field="issueDate">10 Nov 2026</span></span>
+        <div class="signer-rule"></div>
+        <span class="signer-name" data-field="signer1">G. Ahmed I. Ragab</span>
+        <span class="signer-title" data-field="signer1_title">Founder</span>
+      </div>
+      <div class="seal"><div class="seal-center"><strong>APEX</strong><small>AUTHENTICITY<br>REGISTRY</small></div></div>
+      <div class="signer right">
+        <span class="signer-kicker">AUTHORIZED SIGNATORY · <span data-field="issueDate">10 Nov 2026</span></span>
+        <div class="signer-rule"></div>
+        <span class="signer-name" data-field="signer2">Asmaa Hassan</span>
+        <span class="signer-title" data-field="signer2_title">Volunteer Program Coordinator</span>
+      </div>
+    </section>
+    <footer class="footer">
+      <div class="qrbox" aria-label="QR verification code"><svg id="qr-svg" viewBox="0 0 29 29" shape-rendering="crispEdges" aria-hidden="true"><path id="qr-path" fill="#142e4a" d=""></path></svg><div class="qr-demo">QR ON<br>ISSUED PDF</div></div>
+      <div><div class="footer-label">CERTIFICATE REGISTRY ID</div><div class="footer-main" data-field="certId">APX-2026-VR-DEMO02</div><div class="footer-sub">Verify: <span data-field="verifyUrl">apex-certificates-staging.onrender.com/c/...</span></div></div>
+      <div class="footer-verification"><div class="footer-label">SIGNED RECORD FINGERPRINT</div><div class="fingerprint">SHA-256 · <span data-field="fingerprint">PREVIEW ONLY</span></div><div class="footer-sub">Visual appearance is not proof of validity. Verify the live record online.</div></div>
+    </footer>
+    <div class="preview-watermark" aria-hidden="true">SAMPLE</div>
+  </main>
+</div>
+<script>
+(() => {
+  "use strict";
+  const approved = window.__APEX_CERT__;
+  const demo = {
+    recipient: "Amira Khalid Al-Rashid", department: "Youth Mentorship Initiative",
+    role: "Lead Program Mentor", period: "Feb 2026 – Oct 2026",
+    hours: "186", issueDate: "10 Nov 2026",
+    certId: "APX-2026-VR-DEMO02", signer1: "G. Ahmed I. Ragab",
+    signer1_title: "Founder", signer2: "Asmaa Hassan",
+    signer2_title: "Volunteer Program Coordinator",
+    verifyBase: "apex-certificates-staging.onrender.com", fingerprint: "PREVIEW ONLY"
+  };
+  const d = approved || demo;
+  const display = Object.assign({}, d, {
+    verifyUrl: "https://" + String(d.verifyBase || "").replace(/^https?:\/\//, "").replace(/\/$/, "") + "/c/" + encodeURIComponent(String(d.certId || ""))
+  });
+  for (const node of document.querySelectorAll("[data-field]")) {
+    const value = display[node.getAttribute("data-field")];
+    node.textContent = value == null ? "" : String(value);
+  }
+  const recipient = document.querySelector(".recipient");
+  const n = String(d.recipient || "").length;
+  if (n > 40) recipient.style.fontSize = "31px";
+  else if (n > 29) recipient.style.fontSize = "40px";
+  if (approved && Number.isInteger(d.qrN) && typeof d.qrPath === "string" && d.qrPath) {
+    document.getElementById("qr-svg").setAttribute("viewBox", "0 0 " + d.qrN + " " + d.qrN);
+    document.getElementById("qr-path").setAttribute("d", d.qrPath);
+  }
+  if (!approved) {
+    document.body.classList.add("preview");
+    const shell = document.getElementById("stage-shell");
+    const nav = document.getElementById("preview-nav");
+    const fit = () => {
+      const width = Math.max(320, document.documentElement.clientWidth - 24);
+      const scale = Math.min(1, width / 1123);
+      shell.style.transform = "scale(" + scale + ")";
+      shell.style.marginLeft = Math.max(12, (document.documentElement.clientWidth - 1123 * scale) / 2) + "px";
+      shell.style.marginRight = "0";
+      shell.style.marginBottom = (794 * scale - 794 + 30) + "px";
+      if (nav) nav.style.maxWidth = width + "px";
+    };
+    window.addEventListener("resize", fit, { passive: true });
+    fit();
+  } else {
+    document.getElementById("preview-nav").remove();
+  }
+  document.fonts.ready.then(() => { window.__APEX_CERT_READY__ = true; });
+})();
+</script>
+</body>
+</html>
