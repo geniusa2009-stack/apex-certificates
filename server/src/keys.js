@@ -7,13 +7,33 @@ const rawPublicFromKeyObject = (pub) => b64uDecode(pub.export({ format: 'jwk' })
 export async function loadSigner(cfg, env = process.env) {
   let publicRaw, signRaw;
   if (cfg.keyProvider === 'env') {
-    // APEX_SIGNING_KEY_PEM must be injected by a secret manager (GCP Secret Manager, AWS Secrets Manager, Vault, k8s secret).
-    const pem = env.APEX_SIGNING_KEY_PEM;
-    if (!pem) throw new Error('APEX_SIGNING_KEY_PEM not set');
-    const key = createPrivateKey(pem.replace(/\\n/g, '\n'));
+    // Render's environment editor can alter multiline PEM formatting.
+    // Prefer a single-line base64 of the entire PKCS#8 PEM; keep PEM support
+    // for existing installations. Never print the key or the encoded value.
+    const encoded = env.APEX_SIGNING_KEY_B64?.trim();
+    let pem;
+    if (encoded) {
+      const decoded = Buffer.from(encoded, 'base64');
+      if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) ||
+          decoded.toString('base64') !== encoded) {
+        throw new Error('APEX_SIGNING_KEY_B64 must be standard base64 of a PKCS#8 PEM');
+      }
+      pem = decoded.toString('utf8');
+    } else {
+      pem = env.APEX_SIGNING_KEY_PEM;
+      if (!pem) throw new Error('APEX_SIGNING_KEY_B64 or APEX_SIGNING_KEY_PEM not set');
+      pem = pem.replace(/\\n/g, '\n');
+    }
+    let key;
+    try {
+      key = createPrivateKey(pem);
+    } catch {
+      throw new Error('Invalid Ed25519 signing key configuration; check PKCS#8 PEM formatting');
+    }
     if (key.asymmetricKeyType !== 'ed25519') throw new Error('Signing key must be Ed25519');
     publicRaw = rawPublicFromKeyObject(createPublicKey(key));
     signRaw = async (bytes) => new Uint8Array(edSign(null, bytes, key));
+    delete env.APEX_SIGNING_KEY_B64;
     delete env.APEX_SIGNING_KEY_PEM; // reduce exposure (child processes, debug dumps)
   } else if (cfg.keyProvider === 'gcp-kms') {
     // Cloud KMS key with algorithm EC_SIGN_ED25519. UNVERIFIED in this repo's CI (needs a GCP project).
