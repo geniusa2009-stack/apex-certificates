@@ -8,6 +8,9 @@ const LIST_COLS = `id, state, name, department, role, period_start, period_end, 
   created_by, submitted_by, approved_by, signed_by, published_by, kid, record_hash, pdf_sha256, created_at, updated_at`;
 
 export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
+  // One PDF render at a time per server instance: Render Free has limited RAM.
+  // Prevents duplicate sign requests from racing or spawning many Chromium contexts.
+  let signInProgress = false;
   const lockCert = async (c, id) => {
     const { rows } = await c.query('select * from certificates where id = $1 for update', [id]);
     if (!rows[0]) throw new HttpError(404, 'Certificate not found');
@@ -66,6 +69,9 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
     },
     // Sign: canonical payload → Ed25519 → render PDF → SHA-256 of exact bytes → signed PDF attestation. All built from the stored approved row.
     async sign(user, id) {
+      if (signInProgress) throw new HttpError(409, 'A certificate signing operation is already in progress; please retry after it finishes');
+      signInProgress = true;
+      try {
       const pre = (await pool.query('select * from certificates where id=$1', [id])).rows[0];
       if (!pre) throw new HttpError(404, 'Certificate not found');
       assertAllowed('sign', user, pre);
@@ -92,6 +98,9 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
         await appendAudit(c, { actor: user.id, action: 'certificate.sign', certId: id, details: { kid: signer.kid, record_hash: rHash, pdf_sha256: pdfSha } });
         return { record_hash: rHash, pdf_sha256: pdfSha };
       });
+      } finally {
+        signInProgress = false;
+      }
     },
     async publish(user, id) {
       const pre = (await pool.query('select * from certificates where id=$1', [id])).rows[0];
