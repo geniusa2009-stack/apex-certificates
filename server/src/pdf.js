@@ -10,6 +10,16 @@ export const FONT_FILES = {
   'SourceSerif4-Regular.woff2': '400 normal', 'SourceSerif4-Semibold.woff2': '600 normal', 'SourceSerif4-It.woff2': '400 italic'
 };
 const A4 = { w: 841.89, h: 595.28 };
+const PDF_TEMPLATES = Object.freeze({
+  classic_v1: { file: 'APEX Certificate.dc.html', screenLabel: 'Certificate' },
+  hybrid_v4: { file: 'APEX Certificate V4 - Hybrid Clean.dc.html', screenLabel: 'APEX Hybrid Certificate V4' }
+});
+export function selectPdfTemplate(templateId = 'classic_v1') {
+  if (!Object.prototype.hasOwnProperty.call(PDF_TEMPLATES, templateId)) {
+    throw new Error('Unsupported certificate PDF template');
+  }
+  return PDF_TEMPLATES[templateId];
+}
 const fmtMonth = s => { const [y, m] = s.split('-'); return new Date(Date.UTC(+y, +m - 1, 1)).toLocaleString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); };
 const fmtDate = s => new Date(s + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
@@ -28,8 +38,9 @@ let browserP = null;
 const browser = () => browserP || (browserP = chromium.launch({ args: ['--font-render-hinting=none', '--disable-gpu'] }));
 export async function closeRenderer() { if (browserP) { (await browserP).close(); browserP = null; } }
 
-export async function renderCertificatePdf(cfg, payload, recordHash, signers) {
+export async function renderCertificatePdf(cfg, payload, recordHash, signers, templateId = 'classic_v1') {
   assertFonts(cfg.fontDir);
+  const template = selectPdfTemplate(templateId);
   const verifyUrl = `${cfg.verifyHost}/c/${payload.id}`;
   const qr = qrSvgPath('https://' + verifyUrl);
   // Admin-configurable signer name/title (falls back to cfg.signers'
@@ -42,7 +53,8 @@ export async function renderCertificatePdf(cfg, payload, recordHash, signers) {
     period: `${fmtMonth(payload.period_start)} – ${fmtMonth(payload.period_end)}`, issueDate: fmtDate(payload.issued_at),
     certId: payload.id, signer1: sig.signer1.name, signer1_title: sig.signer1.title,
     signer2: sig.signer2.name, signer2_title: sig.signer2.title, verifyBase: cfg.verifyHost,
-    fingerprint: recordHash.slice(0, 16).toUpperCase().match(/.{4}/g).join(' '), qrN: qr.n, qrPath: qr.d
+    fingerprint: recordHash.slice(0, 16).toUpperCase().match(/.{4}/g).join(' '), qrN: qr.n, qrPath: qr.d,
+    screenLabel: template.screenLabel
   };
   const fontCss = Object.entries(FONT_FILES).map(([f, wv]) => { const [w, s] = wv.split(' ');
     return `@font-face{font-family:'Source Serif 4';font-weight:${w};font-style:${s};font-display:block;src:url(${cfg.renderOrigin}/_fonts/${f}) format('woff2')}`; }).join('');
@@ -70,11 +82,11 @@ export async function renderCertificatePdf(cfg, payload, recordHash, signers) {
     });
     const page = await ctx.newPage();
     await page.addInitScript(d => { window.__APEX_CERT__ = d; }, data);
-    await page.goto(`${cfg.renderOrigin}/APEX%20Certificate.dc.html`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(`${cfg.renderOrigin}/${encodeURIComponent(template.file)}`, { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForFunction(() => window.__APEX_CERT_READY__ === true, null, { timeout: 15000 });
     await page.evaluate(() => document.fonts.ready);
     const check = await page.evaluate((d) => {
-      const root = document.querySelector('[data-screen-label="Certificate"]');
+      const root = document.querySelector('[data-screen-label="' + d.screenLabel + '"]');
       const fonts = ['400 14px "Source Serif 4"', '600 56px "Source Serif 4"', 'italic 400 14px "Source Serif 4"'].every(f => document.fonts.check(f));
       const text = root ? root.innerText : '';
       // Real finding from end-to-end rendering: raw scrollWidth/scrollHeight
@@ -112,11 +124,13 @@ export async function renderCertificatePdf(cfg, payload, recordHash, signers) {
         }
         return (maxRight - minLeft) > rb.width + 1 || (maxBottom - minTop) > rb.height + 1;
       })();
-      return { fonts, overflow, hasName: text.includes(d.recipient), hasId: text.includes(d.certId), hasQr: !!root.querySelector(`path[d="${d.qrPath}"]`) };
+      return { fonts, overflow, hasName: text.includes(d.recipient), hasId: text.includes(d.certId), hasQr: !!root.querySelector(`path[d="${d.qrPath}"]`),
+        containsVolunteerMetadata: /VERIFIED HOURS|SERVICE PERIOD|DEPARTMENT \/ INITIATIVE|VOLUNTEER ROLE/i.test(text) };
     }, data);
     if (!check.fonts) throw new Error('Certificate fonts failed to load; refusing to render');
     if (check.overflow) throw new Error('Certificate content overflows the A4 frame');
     if (!check.hasName || !check.hasId || !check.hasQr) throw new Error('Rendered certificate does not contain the approved record');
+    if (templateId === 'hybrid_v4' && check.containsVolunteerMetadata) throw new Error('V4 rendered unwanted volunteer metadata');
     await page.addStyleTag({ content: '@page{size:297mm 210mm;margin:0}html,body{margin:0!important;padding:0!important;background:#fff!important;width:297mm;height:210mm;overflow:hidden}' });
     const raw = await page.pdf({ width: '297mm', height: '210mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, pageRanges: '1' });
     const doc = await PDFDocument.load(raw, { updateMetadata: false });
