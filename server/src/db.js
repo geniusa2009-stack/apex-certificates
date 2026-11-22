@@ -1,7 +1,7 @@
 import pg from 'pg';
 
 export function createPool(url) {
-  return new pg.Pool({ connectionString: url, max: 10, statement_timeout: 15000 });
+  return new pg.Pool({ connectionString: url, max: 3, statement_timeout: 15000, connectionTimeoutMillis: 10000, idleTimeoutMillis: 30000, keepAlive: true });
 }
 // Real finding from concurrent-write testing: under SERIALIZABLE
 // isolation, Postgres can and does abort one side of two genuinely
