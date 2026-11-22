@@ -4,7 +4,7 @@ import { appendAudit } from './audit.js';
 import { assertAllowed, validateDraft, newCertificateId, buildPayload } from './rules.js';
 import { signingInput, recordHash as computeRecordHash } from '../../shared/apex-verify.js';
 
-const LIST_COLS = `id, state, name, department, role, period_start, period_end, hours, issued_at, supersedes, review_note,
+const LIST_COLS = `id, state, name, department, role, period_start, period_end, hours, template_id, issued_at, supersedes, review_note,
   created_by, submitted_by, approved_by, signed_by, published_by, kid, record_hash, pdf_sha256, created_at, updated_at`;
 
 export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
@@ -30,18 +30,18 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
       const d = validateDraft(input);
       return tx(pool, async c => {
         const id = newCertificateId();
-        await c.query(`insert into certificates(id, state, name, department, role, period_start, period_end, hours, volunteer_email, created_by)
-          values ($1,'draft',$2,$3,$4,$5,$6,$7,$8,$9)`, [id, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email, user.id]);
+        await c.query(`insert into certificates(id, state, name, department, role, period_start, period_end, hours, volunteer_email, created_by, template_id)
+          values ($1,'draft',$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [id, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email, user.id, d.template_id]);
         await appendAudit(c, { actor: user.id, action: 'draft.create', certId: id });
         return { id };
       });
     },
     async update(user, id, input) {
-      const d = validateDraft(input);
       return tx(pool, async c => {
         const cert = await lockCert(c, id); assertAllowed('update', user, cert);
-        await c.query(`update certificates set name=$2, department=$3, role=$4, period_start=$5, period_end=$6, hours=$7, volunteer_email=$8, state='draft' where id=$1`,
-          [id, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email]);
+        const d = validateDraft(input, { defaultTemplateId: cert.template_id });
+        await c.query(`update certificates set name=$2, department=$3, role=$4, period_start=$5, period_end=$6, hours=$7, volunteer_email=$8, template_id=$9, state='draft' where id=$1`,
+          [id, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email, d.template_id]);
         await appendAudit(c, { actor: user.id, action: 'draft.update', certId: id });
       });
     },
@@ -85,7 +85,7 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
       // bytes are hashed and Ed25519-signed right after this call), while
       // every NEW signature always uses whatever is current.
       const signers = await getSigners();
-      const pdf = await renderPdf(payload, rHash, signers);
+      const pdf = await renderPdf(payload, rHash, signers, pre.template_id);
       const pdfSha = createHash('sha256').update(pdf).digest('hex');
       const pdfSt = { v: 1, type: 'pdf', id, kid: signer.kid, sha256: pdfSha, bytes: pdf.length, record_hash: rHash };
       const pdfSig = await signer.sign(signingInput('pdf', pdfSt));
@@ -95,7 +95,7 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
         await c.query(`update certificates set state='signed', signed_by=$2, issued_at=$3, payload=$4, signature=$5, record_hash=$6, kid=$7,
           pdf=$8, pdf_sha256=$9, pdf_statement=$10, pdf_signature=$11 where id=$1`,
           [id, user.id, issuedAt, payload, signature, rHash, signer.kid, pdf, pdfSha, pdfSt, pdfSig]);
-        await appendAudit(c, { actor: user.id, action: 'certificate.sign', certId: id, details: { kid: signer.kid, record_hash: rHash, pdf_sha256: pdfSha } });
+        await appendAudit(c, { actor: user.id, action: 'certificate.sign', certId: id, details: { kid: signer.kid, record_hash: rHash, pdf_sha256: pdfSha, template_id: pre.template_id } });
         return { record_hash: rHash, pdf_sha256: pdfSha };
       });
       } finally {
@@ -134,10 +134,10 @@ export function createIssuance({ pool, cfg, signer, renderPdf, getSigners }) {
     async reissue(user, id, input) {
       return tx(pool, async c => {
         const old = await lockCert(c, id); assertAllowed('reissue', user, old);
-        const d = validateDraft(input || { name: old.name, department: old.department, role: old.role, period_start: old.period_start, period_end: old.period_end, hours: old.hours, volunteer_email: old.volunteer_email });
+        const d = validateDraft(input || { name: old.name, department: old.department, role: old.role, period_start: old.period_start, period_end: old.period_end, hours: old.hours, volunteer_email: old.volunteer_email }, { defaultTemplateId: old.template_id });
         const nid = newCertificateId();
-        await c.query(`insert into certificates(id, state, name, department, role, period_start, period_end, hours, volunteer_email, created_by, supersedes)
-          values ($1,'draft',$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [nid, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email, user.id, id]);
+        await c.query(`insert into certificates(id, state, name, department, role, period_start, period_end, hours, volunteer_email, created_by, supersedes, template_id)
+          values ($1,'draft',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [nid, d.name, d.department, d.role, d.period_start, d.period_end, d.hours, d.volunteer_email, user.id, id, d.template_id]);
         await appendAudit(c, { actor: user.id, action: 'draft.reissue', certId: nid, details: { supersedes: id } });
         return { id: nid };
       });
