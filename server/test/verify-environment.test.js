@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -40,4 +41,25 @@ test('non-verifier page never receives verifier environment metadata', async () 
     assert.equal(res.statusCode, 200);
     assert.doesNotMatch(res.body, /apex-verification-env/);
   } finally { await app.close(); }
+});
+
+test('verifier JavaScript compiles and enforces staging, test, sample or production explicitly', () => {
+  const html = readFileSync(path.join(webRoot, 'APEX Verify.dc.html'), 'utf8');
+  const match = html.match(/<script type="text\\/x-dc" data-dc-script>([\\s\\S]*?)<\\/script>/);
+  assert.ok(match, 'could not find verifier logic');
+  const Component = new Function('DCLogic', match[1] + '\\nreturn Component;')(class {});
+  const verifier = new Component();
+  const wasDocument = globalThis.document;
+  try {
+    for (const env of ['staging', 'production', 'test']) {
+      globalThis.document = { querySelector: () => ({ content: env }) };
+      assert.equal(verifier.verificationEnv('/api/v1'), env);
+      assert.equal(verifier.verificationEnv('samples/api'), 'sample');
+    }
+    globalThis.document = { querySelector: () => null };
+    assert.equal(verifier.verificationEnv('/api/v1'), 'production', 'missing metadata must fail closed for staging');
+  } finally {
+    if (wasDocument === undefined) delete globalThis.document;
+    else globalThis.document = wasDocument;
+  }
 });
