@@ -313,9 +313,17 @@ function renderActions(c){
     add('Reissue (supersede)', async () => { await guarded(() => api('POST', `/certificates/${c.id}/reissue`)); });
   }
 }
+// Signing can render a PDF and take longer than normal admin actions.
+ // Lock the action synchronously so repeat clicks cannot launch parallel requests.
+let actionBusy = false;
 async function guarded(fn){
+  if (actionBusy) return;
+  actionBusy = true;
+  const buttons = [...document.querySelectorAll('#dlg-actions button')];
+  buttons.forEach(b => { b.disabled = true; });
   try { await fn(); toast('Done'); dlg.close(); await loadCerts(); }
   catch (e) { document.getElementById('d-err').textContent = e.message; toast(e.message, true); }
+  finally { actionBusy = false; buttons.forEach(b => { b.disabled = false; }); }
 }
 
 // ---------- global audit ----------
