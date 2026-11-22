@@ -32,6 +32,11 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
   <sc-if value="{{ isSample }}" hint-placeholder-val="{{ true }}">
     <div style="margin:0 clamp(20px,4vw,56px);padding:8px 14px;border:1px solid rgba(196,198,202,.35);border-radius:8px;font-size:13px;color:#C4C6CA;">SAMPLE DATA — records signed with a throwaway test key. Not real certificates.</div>
   </sc-if>
+  <sc-if value="{{ isStagingDeployment }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="margin:0 clamp(20px,4vw,56px);padding:12px 16px;border:1px solid rgba(207,224,255,.55);border-radius:9px;background:rgba(207,224,255,.13);font:600 13px/1.5 Arial,sans-serif;color:#F2F3F5;">
+      STAGING / TEST ENVIRONMENT — Verification here checks APEX staging signatures only. This is not an official production certificate or production verification service.
+    </div>
+  </sc-if>
 
   <main style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:clamp(24px,4vw,64px);padding:12px clamp(20px,4vw,56px) 40px;max-width:1240px;margin:0 auto;align-items:center;">
     <section style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:460px;">
@@ -146,7 +151,7 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
   <sc-if value="{{ isVerified }}" hint-placeholder-val="{{ false }}">
     <section style="max-width:1240px;margin:0 auto;padding:20px clamp(20px,4vw,56px) 72px;display:flex;flex-direction:column;gap:28px;animation:apxRise .8s .2s ease-out both;">
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">Official original record</div>
+        <div style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#CFE0FF;">{{ originalHeading }}</div>
         <h2 style="margin:0;font-size:28px;font-weight:600;">Compare your copy against the issued certificate</h2>
         <p style="margin:0;color:#C4C6CA;font-size:15px;max-width:70ch;">This is rendered from the signed registry record, not from the file you were sent. Every field on your copy must match exactly.</p>
       </div>
@@ -187,7 +192,7 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
     </section>
   </sc-if>
 
-  <footer style="padding:24px clamp(20px,4vw,56px) 36px;font-size:13px;color:#7B7E84;max-width:1240px;margin:0 auto;">Only this page, reached at verify.apex.org, is authoritative. A certificate's appearance — seal, QR, or mascot — is not proof of authenticity on its own.</footer>
+  <footer style="padding:24px clamp(20px,4vw,56px) 36px;font-size:13px;color:#7B7E84;max-width:1240px;margin:0 auto;">{{ footerNotice }}</footer>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
@@ -209,6 +214,13 @@ class Component extends DCLogic {
   t(fn, ms) { const r = matchMedia('(prefers-reduced-motion: reduce)').matches; (this.timers = this.timers || []).push(setTimeout(fn, r ? Math.min(ms, 120) : ms)); }
   apiBase() { const m = document.querySelector('meta[name="apex-api-base"]'); return this.props.apiBase || (m && m.content) || SAMPLE_BASE; }
   isSample(base) { return (base || this.apiBase()).indexOf('samples/') !== -1; }
+  // The serving backend supplies its own environment; never infer trust from
+  // a record, query string, QR code or user-provided identifier.
+  verificationEnv(base) {
+    if (this.isSample(base)) return 'sample';
+    const meta = document.querySelector('meta[name="apex-verification-env"]');
+    return meta && ['production', 'staging', 'test'].includes(meta.content) ? meta.content : 'production';
+  }
   async run(idArg, baseOverride) {
     (this.timers || []).forEach(clearTimeout); this.timers = [];
     const id = String(idArg || this.state.idInput).trim().toUpperCase();
@@ -219,7 +231,7 @@ class Component extends DCLogic {
     let result;
     try {
       const core = await loadCore();
-      result = await core.fetchAndVerify(base, id, { expectEnv: this.isSample(base) ? 'sample' : 'production' });
+      result = await core.fetchAndVerify(base, id, { expectEnv: this.verificationEnv(base) });
     } catch (e) { result = { state: 'UNAVAILABLE', reason: 'Verification code could not be loaded. Nothing was verified.' }; }
     if (runId !== this.runId) return;
     if (!result || ['VERIFIED'].concat(BAD).indexOf(result.state) === -1) result = { state: 'UNAVAILABLE', reason: 'Unexpected verifier output.' };
@@ -244,17 +256,26 @@ class Component extends DCLogic {
     const p = (result && result.payload) || {};
     const first = p.name ? p.name.split(' ')[0] : '';
     const st = (result && result.status) || {};
+    const verificationEnvironment = this.verificationEnv(this.state.base);
+    const sample = verificationEnvironment === 'sample';
+    const staging = verificationEnvironment === 'staging';
+    const test = verificationEnvironment === 'test';
+    const nonProduction = sample || staging || test;
     const COPY = {
       welcome: ['Certificate Verification', 'Welcome to the APEX registry', 'Every APEX certificate is digitally signed when issued and recorded here. Enter a certificate ID, or open the QR link printed on the certificate.', 'Welcome. I’ll check this certificate against the APEX registry.'],
       scanning: ['Verifying', 'Checking the signed record…', 'Retrieving the registry record, validating APEX’s Ed25519 signature in your browser, and checking its current status.', 'One moment — reading the signed record.'],
-      VERIFIED: ['Certificate Verified', 'This certificate has been officially issued by APEX', 'The record below is the signed original. Every detail on the copy you were given must match it exactly — a QR code copied onto an altered document still opens this original.', 'Congratulations, ' + first + '. This one is genuine.'],
+      VERIFIED: staging
+        ? ['STAGING VERIFIED', 'Staging certificate signature verified', 'The signed record and PDF attestation match the APEX staging registry. This is a test-environment certificate, NOT a production credential.', 'Valid staging signature for ' + first + '. Not a production certificate.']
+        : nonProduction
+          ? ['TEST VERIFIED', 'Non-production signature verified', 'This certificate is valid only in its test or sample environment. It is not a production credential.', 'Test verification succeeded.']
+          : ['Certificate Verified', 'This certificate has been officially issued by APEX', 'The record below is the signed original. Every detail on the copy you were given must match it exactly — a QR code copied onto an altered document still opens this original.', 'Congratulations, ' + first + '. This one is genuine.'],
       REVOKED: ['Revoked', 'This certificate has been revoked', (st.reason || 'APEX has revoked this certificate.') + ' It must not be accepted.', 'This record was revoked by APEX.'],
       SUPERSEDED: ['Superseded', 'This certificate has been replaced', (st.reason || 'A newer certificate replaces this one.') + ' Only the current certificate should be accepted.', 'There’s a newer certificate for this volunteer.'],
       INVALID_SIGNATURE: ['Invalid signature', 'The record failed cryptographic verification', 'The data does not match APEX’s digital signature (' + ((result && result.reason) || 'signature check failed') + '). Treat the certificate as forged or altered and contact volunteers@apex.org.', 'The signature doesn’t match. Something was changed.'],
       NOT_FOUND: ['Not found', 'No matching APEX record', ((result && result.reason) || 'This ID is not in the APEX registry') + '. Check the ID, or treat the document as unverified.', 'I couldn’t find this certificate in the registry.'],
       UNAVAILABLE: ['Verification unavailable', 'This certificate could not be checked right now', ((result && result.reason) || 'The registry could not be reached.') + ' This is not a verification result — please try again shortly.', 'I can’t reach the registry right now. Nothing was verified.']
     }[phase];
-    const labels = ['Registry record retrieved', 'APEX Ed25519 signature valid', 'Not revoked or superseded', 'Official PDF fingerprint attested'];
+    const labels = ['Registry record retrieved', 'APEX Ed25519 signature valid', 'Not revoked or superseded', 'Signed PDF fingerprint attested'];
     const failText = {
       NOT_FOUND: ['No record in registry'], UNAVAILABLE: ['Registry unreachable — not verified'],
       INVALID_SIGNATURE: [null, 'Signature invalid — data altered or untrusted key'],
@@ -278,11 +299,15 @@ class Component extends DCLogic {
       period: fmtMonth(p.period_start) + ' – ' + fmtMonth(p.period_end), issueDate: fmtDate(p.issued_at),
       fingerprint: grp(result.recordHash, 16)
     } : {};
-    const sample = this.isSample(this.state.base);
     const pdfUrl = result && result.pdf ? (result.pdf.url || (this.state.base + '/certificates/' + p.id + '.pdf')) : '';
     return {
       kicker: COPY[0], title: COPY[1], lead: COPY[2], bubble: COPY[3],
       isVerified: ok, rec, checks, idInput: this.state.idInput, isSample: sample, showDemos: this.isSample(this.apiBase()),
+      isStagingDeployment: this.verificationEnv() === 'staging',
+      originalHeading: nonProduction ? 'Test environment signed record' : 'Official original record',
+      footerNotice: (this.verificationEnv() === 'staging'
+        ? 'APEX STAGING VERIFIER at ' + location.host + ' — for development and testing only. A verified staging signature does not make a certificate an official production credential.'
+        : 'Certificate verification service at ' + location.host + '. A certificate\'s appearance — seal, QR, or mascot — is not proof of authenticity on its own.'),
       hasSuccessor: phase === 'SUPERSEDED' && !!st.superseded_by, successor: st.superseded_by || '', goSuccessor: go(st.superseded_by),
       onId: e => this.setState({ idInput: e.target.value }),
       onSubmit: e => { e.preventDefault(); this.run(); },
@@ -299,18 +324,18 @@ class Component extends DCLogic {
       mouth: bad ? 'M71 118 L89 118' : ok ? 'M69 113 Q80 124 91 113' : 'M71 115 Q80 122 89 115',
       certZoom: Math.min(1, Math.max(0.3, ((typeof innerWidth === 'number' ? innerWidth : 1200) - 80) / 1123)),
       proof: ok ? [
-        { k: 'Status', v: 'Valid · issued ' + fmtDate(p.issued_at) + (sample ? ' · SAMPLE environment' : '') },
+        { k: 'Status', v: 'Valid · issued ' + fmtDate(p.issued_at) + (nonProduction ? ' · ' + verificationEnvironment.toUpperCase() + ' ONLY (not production)' : '') },
         { k: 'Signed certificate data', v: 'Ed25519 signature by APEX key “' + p.kid + '”, verified in your browser against the published key list' },
         { k: 'Signed record hash (SHA-256 of canonical record)', v: grp(result.recordHash, 64) },
         { k: 'Signature', v: (result.signature || '').slice(0, 44) + '…' },
-        { k: 'Official PDF fingerprint (SHA-256, signed attestation)', v: result.pdf ? grp(result.pdf.sha256, 64) : 'No official PDF has been attested for this record' },
+        { k: 'Signed PDF fingerprint (SHA-256 attestation)', v: result.pdf ? grp(result.pdf.sha256, 64) : 'No PDF has been attested for this record' },
         { k: 'PDF digital signature (PAdES)', v: 'Not applied. The PDF file carries no embedded digital signature; its authenticity is established by matching its fingerprint to this signed record.' }
       ] : [],
       hasOfficialPdf: ok && !!(result && result.pdf), pdfUrl,
       onPdf: e => this.pdfCheck(e),
       pdfLabel: pdf ? pdf.name : 'Choose a PDF',
       pdfDone: !!pdf, pdfHash: pdf ? grp(pdf.hash, 64) : '', pdfOfficial: pdf && pdf.official ? grp(pdf.official, 64) : 'none on record',
-      pdfVerdict: pdf ? (pdf.match ? 'Exact match — this is the official PDF' : pdf.official ? 'Does not match — this file differs from the official PDF' : 'Cannot compare — no official PDF fingerprint on record') : '',
+      pdfVerdict: pdf ? (pdf.match ? (nonProduction ? 'Exact match — signed test-environment PDF' : 'Exact match — this is the official PDF') : pdf.official ? 'Does not match — this file differs from the signed PDF' : 'Cannot compare — no PDF fingerprint on record') : '',
       pdfColor: pdf && pdf.match ? '#CFE0FF' : '#C4C6CA'
     };
   }
