@@ -65,6 +65,12 @@ test('full workflow, verification, tamper, revoke, reissue, audit', opts, async 
   assert.equal((await (await publicVerify(id))).state, 'NOT_FOUND', 'unpublished is not public');
   const signed = await (await issuer('POST', `/api/v1/admin/certificates/${id}/sign`)).json();
   assert.match(signed.pdf_sha256, /^[0-9a-f]{64}$/);
+  const embeddedPdf = await issuer('GET', `/api/v1/admin/certificates/${id}/pdf`);
+  assert.equal(embeddedPdf.status, 200, 'authenticated admin can preview a signed PDF');
+  assert.equal(embeddedPdf.headers.get('x-frame-options'), 'SAMEORIGIN', 'same-origin PDF preview is embeddable');
+  assert.match(embeddedPdf.headers.get('content-disposition') || '', /inline/, 'PDF is displayed inline');
+  const adminList = await issuer('GET', '/api/v1/admin/certificates');
+  assert.equal(adminList.headers.get('x-frame-options'), 'DENY', 'normal admin endpoints remain unframeable');
   assert.equal((await issuer('POST', `/api/v1/admin/certificates/${id}/publish`)).status, 200);
 
   const v = await publicVerify(id);
