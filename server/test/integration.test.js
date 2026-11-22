@@ -39,7 +39,7 @@ before(async () => {
   await pool.query(`delete from sessions; delete from users where email like '%@test.apex'`).catch(() => {});
   const signer = await loadSigner(cfg);
   await registerKey(pool, signer, 'test');
-  const render = process.env.RUN_PDF === '1' ? (p, h) => renderCertificatePdf(cfg, p, h) : null;
+  const render = process.env.RUN_PDF === '1' ? (p, h, signers, templateId) => renderCertificatePdf(cfg, p, h, signers, templateId) : null;
   app = await buildApp({ cfg, pool, signer, logger: false, renderPdf: render || (async (p) => Buffer.from(`%PDF-1.7\n% NON-PRODUCTION TEST STUB for ${p.id}\n%%EOF`)) });
   await app.listen({ port: 0, host: '127.0.0.1' });
   base = `http://127.0.0.1:${app.server.address().port}`;
@@ -58,6 +58,7 @@ test('full workflow, verification, tamper, revoke, reissue, audit', opts, async 
   assert.equal((await viewer('POST', '/api/v1/admin/certificates', draft)).status, 403, 'viewer cannot issue');
 
   const { id } = await (await both('POST', '/api/v1/admin/certificates', draft)).json();
+  assert.equal((await (await both('GET', `/api/v1/admin/certificates/${id}`)).json()).template_id, 'classic_v1', 'V1 remains default');
   assert.equal((await both('POST', `/api/v1/admin/certificates/${id}/submit`)).status, 200);
   assert.equal((await both('POST', `/api/v1/admin/certificates/${id}/approve`)).status, 403, 'self-approval blocked');
   assert.equal((await both('POST', `/api/v1/admin/certificates/${id}/sign`)).status, 409, 'cannot sign unapproved');
@@ -111,6 +112,55 @@ test('full workflow, verification, tamper, revoke, reissue, audit', opts, async 
   assert.deepEqual(hist, ['draft.create', 'review.submit', 'review.approve', 'certificate.sign', 'certificate.publish', 'certificate.supersede']);
   assert.equal((await publicVerify('APX-2026-VR-ZZZZZ999')).state, 'NOT_FOUND');
 });
+test('Hybrid V4: select, edit, review, sign, verify, freeze, reissue', opts, async () => {
+  const issuer = await as('issuer@test.apex'), approver = await as('approver@test.apex');
+  assert.equal((await issuer('POST', '/api/v1/admin/certificates', { ...draft, template_id: '../../fake' })).status, 400);
+
+  const created = await issuer('POST', '/api/v1/admin/certificates', { ...draft, template_id: 'hybrid_v4' });
+  assert.equal(created.status, 200);
+  const { id } = await created.json();
+  let cert = await (await issuer('GET', `/api/v1/admin/certificates/${id}`.trim())).json();
+  assert.equal(cert.template_id, 'hybrid_v4');
+  assert.equal((await issuer('PUT', `/api/v1/admin/certificates/${id}`.trim(), { ...draft, hours: 188 })).status, 200);
+  cert = await (await issuer('GET', `/api/v1/admin/certificates/${id}`.trim())).json();
+  assert.equal(cert.template_id, 'hybrid_v4', 'missing optional template preserves chosen draft');
+
+  assert.equal((await issuer('POST', `/api/v1/admin/certificates/${id}/submit`.trim())).status, 200);
+  assert.equal((await (await publicVerify(id))).state, 'NOT_FOUND');
+  assert.equal((await approver('POST', `/api/v1/admin/certificates/${id}/approve`.trim())).status, 200);
+  const signed = await issuer('POST', `/api/v1/admin/certificates/${id}/sign`.trim());
+  assert.equal(signed.status, 200, 'V4 sign succeeds');
+  const signature = await signed.json();
+  assert.match(signature.pdf_sha256, /^[0-9a-f]{64}$/);
+  const pdfResponse = await issuer('GET', `/api/v1/admin/certificates/${id}/pdf`.trim());
+  assert.equal(pdfResponse.status, 200);
+  const pdf = Buffer.from(await pdfResponse.arrayBuffer());
+  assert.equal(createHash('sha256').update(pdf).digest('hex'), signature.pdf_sha256);
+  if (process.env.RUN_PDF === '1') {
+    const doc = await PDFDocument.load(pdf);
+    assert.equal(doc.getPageCount(), 1);
+    const { width, height } = doc.getPage(0).getSize();
+    assert.ok(Math.abs(width - 841.89) < 1 && Math.abs(height - 595.28) < 1, 'V4 A4 landscape');
+  }
+
+  await assert.rejects(
+    pool.query('update certificates set template_id=$2 where id=$1', [id, 'classic_v1']),
+    /template is immutable/,
+    'signed design cannot change'
+  );
+  assert.equal((await issuer('POST', `/api/v1/admin/certificates/${id}/publish`.trim())).status, 200);
+  const verified = await publicVerify(id);
+  assert.equal(verified.state, 'VERIFIED');
+  assert.equal(verified.pdf.sha256, signature.pdf_sha256);
+  assert.deepEqual(Buffer.from(await (await fetch(`${base}/api/v1/certificates/${id}.pdf`.trim())).arrayBuffer()), pdf);
+  const reissued = await issuer('POST', `/api/v1/admin/certificates/${id}/reissue`.trim());
+  assert.equal(reissued.status, 200);
+  const { id: next } = await reissued.json();
+  const nextCert = await (await issuer('GET', `/api/v1/admin/certificates/${next}`.trim())).json();
+  assert.equal(nextCert.template_id, 'hybrid_v4');
+  assert.equal(nextCert.state, 'draft');
+});
+
 test('CSRF header required on admin mutations', opts, async () => {
   const r = await fetch(base + '/api/v1/admin/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'issuer@test.apex', password: pw }) });
   assert.equal(r.status, 403);

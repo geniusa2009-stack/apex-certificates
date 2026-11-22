@@ -40,7 +40,8 @@ export function assertAllowed(action, user, cert) {
 
 const TEXT = /^[\p{L}\p{M}\p{N} .,'’&()\/-]{2,120}$/u;
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
-export function validateDraft(input) {
+export const CERTIFICATE_TEMPLATES = Object.freeze(['classic_v1', 'hybrid_v4']);
+export function validateDraft(input, { defaultTemplateId = 'classic_v1' } = {}) {
   const o = input || {};
   const clean = (k) => { const v = typeof o[k] === 'string' ? o[k].normalize('NFC').trim().replace(/\s+/g, ' ') : ''; need(TEXT.test(v), 400, `Invalid ${k}`); return v; };
   const out = { name: clean('name'), department: clean('department'), role: clean('role') };
@@ -48,11 +49,13 @@ export function validateDraft(input) {
   need(out.period_end >= out.period_start, 400, 'period_end before period_start');
   need(Number.isInteger(o.hours) && o.hours >= 1 && o.hours <= 10000, 400, 'Invalid hours');
   out.hours = o.hours;
+  out.template_id = o.template_id === undefined ? defaultTemplateId : o.template_id;
+  need(CERTIFICATE_TEMPLATES.includes(out.template_id), 400, 'Invalid certificate template');
   if (o.volunteer_email != null && o.volunteer_email !== '') {
     need(typeof o.volunteer_email === 'string' && /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/i.test(o.volunteer_email), 400, 'Invalid volunteer_email');
     out.volunteer_email = o.volunteer_email.toLowerCase();
   } else out.volunteer_email = null;
-  const extra = Object.keys(o).filter(k => !['name', 'department', 'role', 'period_start', 'period_end', 'hours', 'volunteer_email'].includes(k));
+  const extra = Object.keys(o).filter(k => !['name', 'department', 'role', 'period_start', 'period_end', 'hours', 'volunteer_email', 'template_id'].includes(k));
   need(extra.length === 0, 400, 'Unexpected fields: ' + extra.join(', '));
   return out;
 }

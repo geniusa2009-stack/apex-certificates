@@ -91,7 +91,7 @@
       <div style="flex:none"><button class="primary" id="btn-new">+ New certificate</button></div>
     </div>
     <table>
-      <thead><tr><th>ID</th><th>Name</th><th>Department / Role</th><th>Period</th><th>Hours</th><th>State</th><th>Updated</th></tr></thead>
+      <thead><tr><th>ID</th><th>Name</th><th>Department / Role</th><th>Period</th><th>Hours</th><th>Template</th><th>State</th><th>Updated</th></tr></thead>
       <tbody id="cert-rows"></tbody>
     </table>
   </div>
@@ -118,6 +118,19 @@
       <div><label>Period start (YYYY-MM)</label><input id="d-pstart" placeholder="2026-01"></div>
       <div><label>Period end (YYYY-MM)</label><input id="d-pend" placeholder="2026-06"></div>
       <div><label>Hours</label><input id="d-hours" type="number" min="1" max="10000"></div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="d-template">Certificate template</label>
+        <select id="d-template">
+          <option value="classic_v1">Classic V1 — Original certificate</option>
+          <option value="hybrid_v4">Hybrid Clean V4 — No volunteer metadata on PDF</option>
+        </select>
+        <div class="muted" style="margin-top:6px;font-size:12px">
+          <a id="d-template-preview" href="/APEX%20Certificate.dc.html" target="_blank" rel="noopener noreferrer">Preview selected template</a>
+          <span id="d-template-note">V1 includes the volunteer information panel.</span>
+        </div>
+      </div>
     </div>
     <div class="err-msg" id="d-err"></div>
     <div class="actions" id="dlg-actions"></div>
@@ -229,6 +242,7 @@ function renderRows(){
     const tr = document.createElement('tr'); tr.className = 'clickable';
     tr.innerHTML = `<td>${c.id}</td><td>${c.name}</td><td>${c.department}<br><span class="muted">${c.role}</span></td>
       <td>${c.period_start} – ${c.period_end}</td><td>${c.hours}</td>
+      <td>${c.template_id === 'hybrid_v4' ? 'Hybrid V4' : 'Classic V1'}</td>
       <td><span class="badge ${c.state}">${c.state.replace('_',' ')}</span></td>
       <td class="muted">${new Date(c.updated_at).toLocaleString()}</td>`;
     tr.onclick = () => openCert(c.id);
@@ -242,6 +256,18 @@ document.getElementById('btn-new').onclick = () => openCert(null);
 // ---------- certificate dialog ----------
 const dlg = document.getElementById('dlg');
 document.getElementById('dlg-close').onclick = () => dlg.close();
+const templateLinks = {
+  classic_v1: '/APEX%20Certificate.dc.html',
+  hybrid_v4: '/APEX%20Certificate%20V4%20-%20Hybrid%20Clean.dc.html'
+};
+function updateTemplatePreview() {
+  const template = document.getElementById('d-template').value;
+  document.getElementById('d-template-preview').href = templateLinks[template] || templateLinks.classic_v1;
+  document.getElementById('d-template-note').textContent = template === 'hybrid_v4'
+    ? 'V4 hides department, role, period, and hours on the PDF; the signed record still includes them.'
+    : 'V1 includes the volunteer information panel.';
+}
+document.getElementById('d-template').addEventListener('change', updateTemplatePreview);
 
 async function openCert(id){
   currentId = id;
@@ -258,9 +284,11 @@ async function openCert(id){
   document.getElementById('d-pstart').value = c?.period_start || '';
   document.getElementById('d-pend').value = c?.period_end || '';
   document.getElementById('d-hours').value = c?.hours || '';
+  document.getElementById('d-template').value = c?.template_id || 'classic_v1';
+  updateTemplatePreview();
 
   const readOnly = !!(c && !['draft','rejected'].includes(c.state));
-  for (const el of ['d-name','d-email','d-dept','d-role','d-pstart','d-pend','d-hours']) document.getElementById(el).disabled = readOnly;
+  for (const el of ['d-name','d-email','d-dept','d-role','d-pstart','d-pend','d-hours','d-template']) document.getElementById(el).disabled = readOnly;
 
   renderActions(c);
   if (c && c.state !== 'draft' && c.state !== 'in_review' && c.state !== 'approved' && c.state !== 'rejected') {
@@ -288,7 +316,8 @@ function draftPayload(){
     role: document.getElementById('d-role').value.trim(),
     period_start: document.getElementById('d-pstart').value.trim(),
     period_end: document.getElementById('d-pend').value.trim(),
-    hours: Number(document.getElementById('d-hours').value)
+    hours: Number(document.getElementById('d-hours').value),
+    template_id: document.getElementById('d-template').value
   };
 }
 
