@@ -49,7 +49,11 @@ export async function buildApp({ cfg, pool, signer, signers, renderPdf, logger =
   app.addHook('onSend', async (req, reply) => {
     reply.header('X-Content-Type-Options', 'nosniff');
     reply.header('Referrer-Policy', 'no-referrer');
-    reply.header('X-Frame-Options', 'DENY');
+    // This authenticated PDF is embedded in our own Admin page via an iframe.
+    // Keep all other pages unframeable, but allow this route on the same origin.
+    const adminPdfPreview = req.method === 'GET' &&
+      /^\/api\/v1\/admin\/certificates\/[^/?]+\/pdf(?:\?.*)?$/.test(req.url);
+    reply.header('X-Frame-Options', adminPdfPreview ? 'SAMEORIGIN' : 'DENY');
     if (cfg.secureCookies) reply.header('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   });
   app.setErrorHandler((err, req, reply) => {
