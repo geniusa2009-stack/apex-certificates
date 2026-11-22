@@ -12,7 +12,7 @@ import { verifyChain } from './audit.js';
 import { createPassport } from './passport.js';
 import { PUBLIC_ID_RE } from '../../shared/passport-rules.js';
 
-const PUBLIC_FILES = new Set(['APEX Verify.dc.html', 'APEX Certificate.dc.html', 'APEX Issuance & Security.dc.html', 'APEX Volunteer Passport.dc.html', 'APEX Certificates Admin.dc.html', 'support.js']);
+const PUBLIC_FILES = new Set(['APEX Verify.dc.html', 'APEX Certificate.dc.html', 'APEX Certificate V4 - Hybrid Clean.dc.html', 'APEX Issuance & Security.dc.html', 'APEX Volunteer Passport.dc.html', 'APEX Certificates Admin.dc.html', 'support.js']);
 const PUBLIC_DIRS = ['shared/', '_ds/'];
 
 export async function buildApp({ cfg, pool, signer, signers, renderPdf, logger = true }) {
