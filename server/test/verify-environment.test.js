@@ -45,9 +45,9 @@ test('non-verifier page never receives verifier environment metadata', async () 
 
 test('verifier JavaScript compiles and enforces staging, test, sample or production explicitly', () => {
   const html = readFileSync(path.join(webRoot, 'APEX Verify.dc.html'), 'utf8');
-  const match = html.match(/<script type="text\\/x-dc" data-dc-script>([\\s\\S]*?)<\\/script>/);
+  const match = html.match(/<script type="text\/x-dc" data-dc-script>([\s\S]*?)<\/script>/);
   assert.ok(match, 'could not find verifier logic');
-  const Component = new Function('DCLogic', match[1] + '\\nreturn Component;')(class {});
+  const Component = new Function('DCLogic', match[1] + '\nreturn Component;')(class {});
   const verifier = new Component();
   const wasDocument = globalThis.document;
   try {
