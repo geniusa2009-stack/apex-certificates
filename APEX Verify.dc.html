@@ -30,11 +30,11 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
     <div style="font-size:14px;color:#C4C6CA;">Certificate Verification</div>
   </header>
   <sc-if value="{{ isSample }}" hint-placeholder-val="{{ true }}">
-    <div style="margin:0 clamp(20px,4vw,56px);padding:8px 14px;border:1px solid rgba(196,198,202,.35);border-radius:8px;font-size:13px;color:#C4C6CA;">SAMPLE DATA — records signed with a throwaway test key. Not real certificates.</div>
+    <div style="margin:0 clamp(20px,4vw,56px);padding:8px 14px;border:1px solid rgba(196,198,202,.35);border-radius:8px;font-size:13px;color:#C4C6CA;">SAMPLE DATA — demonstration records signed with a temporary key. These are not issued credentials.</div>
   </sc-if>
   <sc-if value="{{ isStagingDeployment }}" hint-placeholder-val="{{ false }}">
     <div role="status" style="margin:0 clamp(20px,4vw,56px);padding:12px 16px;border:1px solid rgba(207,224,255,.55);border-radius:9px;background:rgba(207,224,255,.13);font:600 13px/1.5 Arial,sans-serif;color:#F2F3F5;">
-      STAGING / TEST ENVIRONMENT — Verification here checks APEX staging signatures only. This is not an official production certificate or production verification service.
+      APEX STAGING REGISTRY — This page verifies records signed by the APEX staging key. Production certificates use a separate registry and signing key.
     </div>
   </sc-if>
 
@@ -174,7 +174,7 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
           <div style="font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:#7B7E84;">Check a PDF you received</div>
           <p style="margin:0;font-size:14px;line-height:1.55;color:#C4C6CA;">Choose the PDF you were given. Its SHA-256 fingerprint is computed on your device and compared with the fingerprint APEX signed at issuance. Nothing is uploaded. Any edit to the file — even re-saving it — changes the fingerprint.</p>
           <sc-if value="{{ hasOfficialPdf }}" hint-placeholder-val="{{ false }}">
-            <a href="{{ pdfUrl }}" download="" style="font-size:14px;color:#CFE0FF;">Download the official PDF →</a>
+            <a href="{{ pdfUrl }}" download="" style="font-size:14px;color:#CFE0FF;">Download the signed PDF →</a>
           </sc-if>
           <label style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:12px;border:1px dashed rgba(196,198,202,.4);color:#C4C6CA;cursor:pointer;font-size:14px;" style-hover="border-color:#CFE0FF;color:#F2F3F5;">
             <input type="file" accept="application/pdf" onChange="{{ onPdf }}" style="display:none;">
@@ -184,7 +184,7 @@ a{color:#CFE0FF}a:hover{color:#F2F3F5}
             <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:#C4C6CA;word-break:break-all;">
               <span style="font-size:15px;font-weight:600;color:{{ pdfColor }};">{{ pdfVerdict }}</span>
               <span>Your file · {{ pdfHash }}</span>
-              <span>Official original · {{ pdfOfficial }}</span>
+              <span>Registry original · {{ pdfOfficial }}</span>
             </div>
           </sc-if>
         </div>
@@ -265,9 +265,9 @@ class Component extends DCLogic {
       welcome: ['Certificate Verification', 'Welcome to the APEX registry', 'Every APEX certificate is digitally signed when issued and recorded here. Enter a certificate ID, or open the QR link printed on the certificate.', 'Welcome. I’ll check this certificate against the APEX registry.'],
       scanning: ['Verifying', 'Checking the signed record…', 'Retrieving the registry record, validating APEX’s Ed25519 signature in your browser, and checking its current status.', 'One moment — reading the signed record.'],
       VERIFIED: staging
-        ? ['STAGING VERIFIED', 'Staging certificate signature verified', 'The signed record and PDF attestation match the APEX staging registry. This is a test-environment certificate, NOT a production credential.', 'Valid staging signature for ' + first + '. Not a production certificate.']
+        ? ['STAGING VERIFIED', 'APEX staging signature verified', 'The digital signature and PDF attestation match the APEX staging registry. Production credentials are issued and checked separately.', 'Valid staging signature for ' + first + '.']
         : nonProduction
-          ? ['TEST VERIFIED', 'Non-production signature verified', 'This certificate is valid only in its test or sample environment. It is not a production credential.', 'Test verification succeeded.']
+          ? ['NON-PRODUCTION VERIFIED', 'Non-production signature verified', 'This record can only be verified in the environment where it was issued. Production certificates use a separate signing key.', 'Non-production verification succeeded.']
           : ['Certificate Verified', 'This certificate has been officially issued by APEX', 'The record below is the signed original. Every detail on the copy you were given must match it exactly — a QR code copied onto an altered document still opens this original.', 'Congratulations, ' + first + '. This one is genuine.'],
       REVOKED: ['Revoked', 'This certificate has been revoked', (st.reason || 'APEX has revoked this certificate.') + ' It must not be accepted.', 'This record was revoked by APEX.'],
       SUPERSEDED: ['Superseded', 'This certificate has been replaced', (st.reason || 'A newer certificate replaces this one.') + ' Only the current certificate should be accepted.', 'There’s a newer certificate for this volunteer.'],
@@ -286,7 +286,7 @@ class Component extends DCLogic {
       const x = bad && step === i && failText[phase] && failText[phase][i];
       const na = ok && i === 3 && !(result && result.pdf);
       return {
-        label: x ? failText[phase][i] : na ? 'No official PDF on record yet' : label,
+        label: x ? failText[phase][i] : na ? 'No signed PDF on record yet' : label,
         mark: x ? '×' : done ? '✓' : na ? '–' : active ? '•' : '',
         fill: x ? '#7B7E84' : done ? '#CFE0FF' : 'transparent',
         ring: x || na ? '#7B7E84' : done || active ? '#CFE0FF' : 'rgba(196,198,202,.3)',
@@ -304,9 +304,9 @@ class Component extends DCLogic {
       kicker: COPY[0], title: COPY[1], lead: COPY[2], bubble: COPY[3],
       isVerified: ok, rec, checks, idInput: this.state.idInput, isSample: sample, showDemos: this.isSample(this.apiBase()),
       isStagingDeployment: this.verificationEnv() === 'staging',
-      originalHeading: nonProduction ? 'Test environment signed record' : 'Official original record',
+      originalHeading: nonProduction ? 'Staging or sample signed record' : 'Official original record',
       footerNotice: (this.verificationEnv() === 'staging'
-        ? 'APEX STAGING VERIFIER at ' + location.host + ' — for development and testing only. A verified staging signature does not make a certificate an official production credential.'
+        ? 'APEX STAGING VERIFIER at ' + location.host + ' — verifies APEX staging signatures. Production certificates use a separate signing key and verification registry.'
         : 'Certificate verification service at ' + location.host + '. A certificate\'s appearance — seal, QR, or mascot — is not proof of authenticity on its own.'),
       hasSuccessor: phase === 'SUPERSEDED' && !!st.superseded_by, successor: st.superseded_by || '', goSuccessor: go(st.superseded_by),
       onId: e => this.setState({ idInput: e.target.value }),
@@ -335,7 +335,7 @@ class Component extends DCLogic {
       onPdf: e => this.pdfCheck(e),
       pdfLabel: pdf ? pdf.name : 'Choose a PDF',
       pdfDone: !!pdf, pdfHash: pdf ? grp(pdf.hash, 64) : '', pdfOfficial: pdf && pdf.official ? grp(pdf.official, 64) : 'none on record',
-      pdfVerdict: pdf ? (pdf.match ? (nonProduction ? 'Exact match — signed test-environment PDF' : 'Exact match — this is the official PDF') : pdf.official ? 'Does not match — this file differs from the signed PDF' : 'Cannot compare — no PDF fingerprint on record') : '',
+      pdfVerdict: pdf ? (pdf.match ? (nonProduction ? 'Exact match — signed staging or sample PDF' : 'Exact match — this is the official PDF') : pdf.official ? 'Does not match — this file differs from the signed PDF' : 'Cannot compare — no PDF fingerprint on record') : '',
       pdfColor: pdf && pdf.match ? '#CFE0FF' : '#C4C6CA'
     };
   }
