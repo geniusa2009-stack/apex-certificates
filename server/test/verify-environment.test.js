@@ -25,7 +25,7 @@ test('the verifier receives the server environment, never a QR/query override', 
       assert.equal(res.headers['cache-control'], 'no-store');
       assert.ok(res.body.includes(`<meta name="apex-verification-env" content="${env}">`), 'server environment must control trust');
       assert.match(res.body, /expectEnv: this\.verificationEnv\(base\)/, 'browser must enforce server environment');
-      assert.match(res.body, /STAGING \/ TEST ENVIRONMENT/, 'staging must be labeled');
+      assert.match(res.body, /APEX STAGING REGISTRY/, 'staging must be labeled');
       assert.match(res.body, /STAGING VERIFIED/, 'staging success must be distinct from production success');
       const qrRoute = await app.inject({ method: 'GET', url: '/c/APX-2026-VR-ABCDE234' });
       assert.equal(qrRoute.statusCode, 302);
@@ -62,4 +62,13 @@ test('verifier JavaScript compiles and enforces staging, test, sample or product
     if (wasDocument === undefined) delete globalThis.document;
     else globalThis.document = wasDocument;
   }
+});
+
+test('staging UI avoids trial labels while retaining the required non-production distinction', () => {
+  const html = readFileSync(path.join(webRoot, 'APEX Verify.dc.html'), 'utf8');
+  assert.match(html, /APEX STAGING REGISTRY/);
+  assert.match(html, /STAGING VERIFIED/);
+  assert.match(html, /Production certificates use a separate registry and signing key/);
+  assert.doesNotMatch(html, /STAGING \/ TEST ENVIRONMENT|test-environment certificate|for development and testing only/);
+  assert.match(html, /expectEnv: this\.verificationEnv\(base\)/, 'signed environment validation must remain enforced');
 });
