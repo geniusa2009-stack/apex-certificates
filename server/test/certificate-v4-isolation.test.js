@@ -14,9 +14,9 @@ const data = v4.slice(v4.indexOf(marker));
 
 test('V4 is an isolated addition; V1 signing continues using V1', () => {
   assert.match(legacy, /Your commitment, collaboration, and initiative/);
-  assert.match(renderer, /APEX Certificate\\.dc\\.html/);
+  assert.match(renderer, /APEX Certificate\.dc\.html/);
   assert.doesNotMatch(renderer, /Certificate V4/);
-  assert.match(data, /window\\.__APEX_CERT__/);
+  assert.match(data, /window\.__APEX_CERT__/);
   assert.match(data, /class Component extends DCLogic/);
 });
 
@@ -30,8 +30,8 @@ test('hybrid has upper seal, recipient and lower signer/verifier layout', () => 
 });
 
 test('entire volunteer metadata panel is removed from visible V4', () => {
-  for (const phrase of ['DEPARTMENT \\/ INITIATIVE', 'VOLUNTEER ROLE','SERVICE PERIOD','VERIFIED HOURS','ISSUE DATE','ISSUED']) {
-    assert.ok(!markup.includes(phrase.replace('\\/','/')), 'metadata leaked into visible layout: ' + phrase);
+  for (const phrase of ['DEPARTMENT / INITIATIVE', 'VOLUNTEER ROLE','SERVICE PERIOD','VERIFIED HOURS','ISSUE DATE','ISSUED']) {
+    assert.ok(!markup.includes(phrase), 'metadata leaked into visible layout: ' + phrase);
   }
   assert.doesNotMatch(markup, /width:737px;height:158px/);
 });
