@@ -70,9 +70,14 @@ export async function buildApp({ cfg, pool, signer, signers, renderPdf, logger =
     const ok = PUBLIC_FILES.has(rel) || PUBLIC_DIRS.some(d => rel.startsWith(d) && !rel.includes('..'));
     if (!ok) throw new HttpError(404, 'Not found');
     if (rel === 'APEX Verify.dc.html' || rel === 'APEX Volunteer Passport.dc.html') {
+      // Trust is determined by this server's configured environment, not by
+      // the certificate QR, record payload, URL params or browser inputs.
+      const verifierEnvMeta = rel === 'APEX Verify.dc.html'
+        ? '\n<meta name="apex-verification-env" content="' + cfg.env + '">'
+        : '';
       const html = fs.readFileSync(path.join(cfg.webRoot, rel), 'utf8')
-        .replace('<head>', '<head>\n<meta name="apex-api-base" content="/api/v1">');
-      return reply.type('text/html; charset=utf-8').send(html);
+        .replace('<head>', '<head>\n<meta name="apex-api-base" content="/api/v1">' + verifierEnvMeta);
+      return reply.type('text/html; charset=utf-8').header('Cache-Control', 'no-store').send(html);
     }
     return reply.sendFile(rel);
   };
